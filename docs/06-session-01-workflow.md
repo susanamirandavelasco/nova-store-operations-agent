@@ -40,3 +40,7 @@ Suggested dialogue:
 ## Next design question
 
 Should a suspended workflow resume implicitly when the employee sends an order number, or require an explicit resume instruction?
+
+## Known classifier failure: negation
+
+The message `No quiero cancelar, quiero continuar` can be misclassified as `CANCEL` because the prototype checks keywords without understanding negation or context. Do **not** use this classifier for real cancellation decisions. A future contextual intent classifier must be evaluated on negations and ambiguous requests; cancellation of consequential operations must also be guarded by deterministic state checks and appropriate confirmation. This is a documented limitation, not a passing behavioral test.
