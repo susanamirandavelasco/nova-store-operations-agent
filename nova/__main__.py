@@ -1,11 +1,12 @@
-"""Run with: python -m nova"""
-
-from nova.workflow import InMemoryConversationStore
+"""Run with: python -m nova. Conversation state persists in local SQLite."""
+from nova.repository import SQLiteStateRepository
+from nova.service import WorkflowService
 
 
 def main() -> None:
-    store = InMemoryConversationStore()
-    print("Nova prototype — type 'salir' to exit")
+    service = WorkflowService(SQLiteStateRepository())
+    print("Nova prototype — SQLite persistence enabled; type 'salir' to exit")
+    print("Conversation: demo_001")
     while True:
         try:
             message = input("\nEmpleado: ")
@@ -14,7 +15,7 @@ def main() -> None:
             break
         if message.strip().casefold() == "salir":
             break
-        response, state = store.handle_message("demo_001", message)
+        response, state = service.handle_message("demo_001", message)
         print(f"Nova: {response}")
         print(f"STATE: {state}")
 
