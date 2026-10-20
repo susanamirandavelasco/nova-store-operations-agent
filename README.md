@@ -1,63 +1,84 @@
 # Nova — Store Operations Agent
 
-> Production-oriented Special Purpose AI Agent (SPA) for retail operations.
+> Workflow-first AI agent for a fictional retail operations team. **Educational portfolio project; not production-ready.**
 
-Nova is a portfolio project that simulates the design, evaluation, and deployment of an enterprise AI agent for a fictional retail company, **NovaRetail**.
+Nova simulates the design, implementation, testing, and evaluation of a special-purpose AI agent for **NovaRetail**, a fictional retailer. All company data, orders, and business metrics are fictitious.
 
-The project intentionally starts with the **business problem and discovery process**, rather than with a framework or model.
+## Business problem and MVP
 
-## Business problem
+Store employees need fast, reliable guidance on returns, warranties, and procedures. Hypothetical business objective: reduce supervisor interruptions for routine operational questions by **30%**.
 
-Frontline store employees frequently need help with returns, warranties, promotions, and internal procedures. The information exists, but is distributed across operational documentation, so employees often interrupt supervisors for help.
+Planned MVP:
+1. Answer policy questions using RAG and cite sources.
+2. Look up fictional orders and recommend return eligibility using deterministic rules.
+3. Clarify ambiguity and escalate unsupported or unauthorized cases.
 
-**Hypothetical business objective:** reduce operational questions requiring supervisor intervention by **30%**.
+The Level 1 pilot **does not execute real returns**. Progression: baseline → shadow mode → assisted mode → controlled execution.
 
-> All company names, operational data, orders, customers, and business metrics in this repository are fictional and created for educational/portfolio purposes.
+## Current implementation
 
-## MVP
+| Milestone | Status | Delivered |
+| --- | --- | --- |
+| Sprint 0 — Discovery | Complete | Business case, discovery, scope, pilot, architecture |
+| Session 1 — Workflow and state | Complete, merged | Deterministic router, conversation state, in-memory store, 7 tests |
+| Session 2 — Persistence | Complete, merged | Repository abstraction, SQLite, WorkflowService, restart recovery; 14 total tests |
+| Session 3 — LLM intent classification | In progress (feature branch) | Structured classification contract, optional OpenAI adapter, fail-safe parsing, tests; integration under development |
 
-Nova will initially support three capabilities:
+**Last locally reported test result:** `22 passed in 0.16s` on `feature/session-03-intent-classifier`, before the current integration changes.
 
-1. **Knowledge** — answer questions about returns, warranties, and promotions using internal documentation and cite the relevant source.
-2. **Order lookup and return recommendation** — retrieve a fictional order, apply the relevant policy and recommend an outcome.
-3. **Escalation** — recognize ambiguous, unsupported, or unauthorized cases and route them to a human.
+## Architecture (current)
 
-Critical business rules will not rely solely on probabilistic LLM reasoning. Deterministic controls will be used where incorrect execution creates business risk.
+```text
+Employee / CLI
+      |
+WorkflowService  --> StateRepository (in-memory or SQLite)
+      |
+Deterministic route() --> NovaState
 
-## Pilot strategy
+IntentClassifier --> StructuredIntentModel --> optional OpenAIIntentModel
+       (integration in progress)
+```
 
-The project models progressive autonomy:
+**Design principles:** LLM interprets ambiguous language; Python validates identifiers and business rules; workflow controls transitions; unclear requests ask for clarification instead of guessing. Extracted order IDs are not verified orders. No actual order lookup or return execution exists yet.
 
-**Baseline → Shadow Mode → Assisted Mode → controlled execution**
+## Run locally
 
-The first pilot does not allow the agent to execute real returns. Human and agent decisions are captured independently and evaluated before increasing autonomy.
+Requires Python 3.10+.
 
-## Planned technical journey
+```bash
+python -m pip install -r requirements-dev.txt
+python -m pytest -q
+python -m nova
+```
 
-The implementation will progressively cover:
+The CLI uses SQLite persistence in `nova_state.sqlite3` and demo conversation `demo_001`. The database is ignored by Git. Type `salir` to exit.
 
-- LLM orchestration
-- Retrieval-Augmented Generation (RAG)
-- Tool calling
-- Deterministic guardrails
-- Human-in-the-loop
-- Automated evaluation
-- Observability
-- API and UI
-- Docker
-- CI/CD
-- Cloud deployment
+Optional real LLM adapter (not required for tests):
 
-The architecture and technology choices will be documented as the project evolves.
+```bash
+python -m pip install -r requirements-llm.txt
+```
 
-## Documentation
+Set `OPENAI_API_KEY` in your environment; **never commit API keys**. The optional adapter makes billable API calls when invoked. The CLI currently uses deterministic routing until LLM integration is explicitly enabled.
+
+## Project documentation
 
 - [Business case](docs/01-business-case.md)
-- [Discovery findings](docs/02-discovery.md)
+- [Discovery](docs/02-discovery.md)
 - [MVP scope](docs/03-mvp-scope.md)
 - [Pilot design](docs/04-pilot-design.md)
 - [Architecture](docs/05-architecture.md)
+- [Session 1 — Workflow](docs/06-session-01-workflow.md)
+- [Session 2 — Persistence](docs/07-session-02-persistence.md)
+- [Session 3 — Intent classification](docs/08-session-03-intent-classification.md)
 
-## Status
+## Next steps
 
-**Sprint 0 — Discovery and solution definition**
+- Integrate state-aware intent classification with deterministic workflow rules.
+- Handle ambiguous requests and provisional order references safely.
+- Implement fictional order lookup and deterministic return policy checks.
+- Add RAG, tool calling, escalation, evaluations, observability, API/UI and deployment.
+
+## Known limitations
+
+No live order system, no policy RAG, no real returns, no production authentication, no concurrency-safe state updates, no database migrations or retention policy. Model output and external API failures need further hardening before production use.

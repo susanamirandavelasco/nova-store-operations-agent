@@ -1,5 +1,4 @@
-"""Deterministic workflow prototype. No LLM or external services yet."""
-
+"""Deterministic workflow prototype; optional intent is supplied by an interpreter."""
 from dataclasses import dataclass
 from enum import Enum
 import re
@@ -27,7 +26,7 @@ class NovaState:
 
 
 def classify_message(message: str) -> str:
-    """Deliberately simple classifier for learning state transitions."""
+    """Simple legacy classifier for the deterministic CLI demo."""
     text = message.casefold()
     if re.search(r"\b(cancelar|cancela|cancelo)\b", text):
         return "CANCEL"
@@ -45,9 +44,11 @@ def extract_order_id(message: str) -> str | None:
     return value if re.fullmatch(r"[0-9]+", value) else None
 
 
-def route(state: NovaState, message: str) -> str:
-    """Mutate one conversation's state and return a simulated reply."""
-    intent = classify_message(message)
+def route(state: NovaState, message: str, resolved_intent: str | None = None) -> str:
+    """Mutate one conversation's state; never trust an LLM to validate order IDs."""
+    intent = resolved_intent if resolved_intent is not None else classify_message(message)
+    if intent not in {"CANCEL", "RESUME", "POLICY_QUESTION", "RETURN_REQUEST", "UNKNOWN"}:
+        return "No reconocí la solicitud. ¿Puedes aclararla?"
 
     if intent == "CANCEL":
         if state.status == Status.CANCELLED:
