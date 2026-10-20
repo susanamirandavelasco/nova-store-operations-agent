@@ -22,9 +22,10 @@ The Level 1 pilot **does not execute real returns**. Progression: baseline → s
 | Sprint 0 — Discovery | Complete | Business case, discovery, scope, pilot, architecture |
 | Session 1 — Workflow and state | Complete, merged | Deterministic router, conversation state, in-memory store, 7 tests |
 | Session 2 — Persistence | Complete, merged | Repository abstraction, SQLite, WorkflowService, restart recovery; 14 total tests |
-| Session 3 — LLM intent classification | Complete, merged | Structured classification contract, optional OpenAI adapter, workflow integration; 28 total tests |\n| Session 4 — Order verification | In progress (feature branch) | Fake order lookup, provisional IDs, deterministic corroboration, SQLite migration; tests pending execution |
+| Session 3 — LLM intent classification | Complete, merged | Structured classification contract, optional OpenAI adapter, workflow integration; 28 total tests |
+| Session 4 — Order verification | Complete, merged | Fictional order lookup, provisional ID, deterministic corroboration, SQLite migration; 43 total tests |
 
-**Last locally reported test result:** `35 passed in 0.12s` on the initial session-4 branch, before provisional-state integration. Run tests again for current changes.
+**Last locally reported test result:** `43 passed in 0.16s` in GitHub Codespaces on session 4, plus a successful manual end-to-end test. These results were reported before the documentation-only update.
 
 ## Architecture (current)
 
@@ -36,7 +37,7 @@ WorkflowService  --> StateRepository (in-memory or SQLite)
 Deterministic route() --> NovaState
 
 IntentClassifier --> StructuredIntentModel --> optional OpenAIIntentModel
-       (integration in progress)
+WorkflowService --> optional FakeOrderRepository --> verify_order
 ```
 
 **Design principles:** LLM interprets ambiguous language; Python validates identifiers and business rules; workflow controls transitions; unclear requests ask for clarification instead of guessing. A provisional order ID is corroborated against fictional records before becoming a confirmed reference. Corroboration is not identity verification, authorization or return eligibility. No live order lookup or return execution exists yet.
@@ -70,15 +71,16 @@ Set `OPENAI_API_KEY` in your environment; **never commit API keys**. The optiona
 - [Architecture](docs/05-architecture.md)
 - [Session 1 — Workflow](docs/06-session-01-workflow.md)
 - [Session 2 — Persistence](docs/07-session-02-persistence.md)
-- [Session 3 — Intent classification](docs/08-session-03-intent-classification.md)\n- [Session 4 — Order verification](docs/09-session-04-order-verification.md)
+- [Session 3 — Intent classification](docs/08-session-03-intent-classification.md)
+- [Session 4 — Order verification](docs/09-session-04-order-verification.md)
 
 ## Next steps
 
-- Integrate state-aware intent classification with deterministic workflow rules.
-- Handle ambiguous requests and provisional order references safely.
-- Implement fictional order lookup and deterministic return policy checks.
+- Improve natural-language extraction of order details and interruption handling.
+- Enable the optional order-verification flow in an interactive demo.
+- Implement deterministic return eligibility rules using fictional order data.
 - Add RAG, tool calling, escalation, evaluations, observability, API/UI and deployment.
 
 ## Known limitations
 
-No live order system, no policy RAG, no real returns, no production authentication, no concurrency-safe state updates, no database migrations or retention policy. Model output and external API failures need further hardening before production use.
+No live order system, no policy RAG, no real returns, no production authentication, no concurrency-safe state updates, no formal migration framework beyond the additive SQLite column migration, or retention policy. Model output and external API failures need further hardening before production use.
