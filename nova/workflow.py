@@ -13,6 +13,7 @@ class Status(str, Enum):
 class Step(str, Enum):
     UNDERSTAND = "UNDERSTAND"
     ASK_FOR_ORDER_ID = "ASK_FOR_ORDER_ID"
+    ASK_FOR_ORDER_DETAILS = "ASK_FOR_ORDER_DETAILS"
     GET_ORDER = "GET_ORDER"
     NONE = "NONE"
 
@@ -23,10 +24,11 @@ class NovaState:
     order_id: str | None = None
     next_step: Step = Step.UNDERSTAND
     status: Status = Status.ACTIVE
+    pending_order_id: str | None = None
 
 
 def classify_message(message: str) -> str:
-    """Simple legacy classifier for the deterministic CLI demo."""
+    """Simple legacy classifier for learning state transitions."""
     text = message.casefold()
     if re.search(r"\b(cancelar|cancela|cancelo)\b", text):
         return "CANCEL"
@@ -56,6 +58,7 @@ def route(state: NovaState, message: str, resolved_intent: str | None = None) ->
         state.status = Status.CANCELLED
         state.next_step = Step.NONE
         state.order_id = None
+        state.pending_order_id = None
         state.intent = "UNKNOWN"
         return "Cancelé la consulta de devolución pendiente."
 
@@ -74,6 +77,7 @@ def route(state: NovaState, message: str, resolved_intent: str | None = None) ->
     if intent == "RETURN_REQUEST":
         state.intent = intent
         state.order_id = None
+        state.pending_order_id = None
         state.status = Status.ACTIVE
         state.next_step = Step.ASK_FOR_ORDER_ID
         return "¿Cuál es el número de orden?"
