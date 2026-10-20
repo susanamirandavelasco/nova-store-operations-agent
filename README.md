@@ -22,9 +22,9 @@ The Level 1 pilot **does not execute real returns**. Progression: baseline → s
 | Sprint 0 — Discovery | Complete | Business case, discovery, scope, pilot, architecture |
 | Session 1 — Workflow and state | Complete, merged | Deterministic router, conversation state, in-memory store, 7 tests |
 | Session 2 — Persistence | Complete, merged | Repository abstraction, SQLite, WorkflowService, restart recovery; 14 total tests |
-| Session 3 — LLM intent classification | In progress (feature branch) | Structured classification contract, optional OpenAI adapter, fail-safe parsing, tests; integration under development |
+| Session 3 — LLM intent classification | Complete, merged | Structured classification contract, optional OpenAI adapter, workflow integration; 28 total tests |\n| Session 4 — Order verification | In progress (feature branch) | Fake order lookup, provisional IDs, deterministic corroboration, SQLite migration; tests pending execution |
 
-**Last locally reported test result:** `22 passed in 0.16s` on `feature/session-03-intent-classifier`, before the current integration changes.
+**Last locally reported test result:** `35 passed in 0.12s` on the initial session-4 branch, before provisional-state integration. Run tests again for current changes.
 
 ## Architecture (current)
 
@@ -39,7 +39,7 @@ IntentClassifier --> StructuredIntentModel --> optional OpenAIIntentModel
        (integration in progress)
 ```
 
-**Design principles:** LLM interprets ambiguous language; Python validates identifiers and business rules; workflow controls transitions; unclear requests ask for clarification instead of guessing. Extracted order IDs are not verified orders. No actual order lookup or return execution exists yet.
+**Design principles:** LLM interprets ambiguous language; Python validates identifiers and business rules; workflow controls transitions; unclear requests ask for clarification instead of guessing. A provisional order ID is corroborated against fictional records before becoming a confirmed reference. Corroboration is not identity verification, authorization or return eligibility. No live order lookup or return execution exists yet.
 
 ## Run locally
 
@@ -70,7 +70,7 @@ Set `OPENAI_API_KEY` in your environment; **never commit API keys**. The optiona
 - [Architecture](docs/05-architecture.md)
 - [Session 1 — Workflow](docs/06-session-01-workflow.md)
 - [Session 2 — Persistence](docs/07-session-02-persistence.md)
-- [Session 3 — Intent classification](docs/08-session-03-intent-classification.md)
+- [Session 3 — Intent classification](docs/08-session-03-intent-classification.md)\n- [Session 4 — Order verification](docs/09-session-04-order-verification.md)
 
 ## Next steps
 
