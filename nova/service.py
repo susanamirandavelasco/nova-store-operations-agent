@@ -3,6 +3,7 @@ import re
 from typing import Protocol
 
 from nova.intent_classifier import IntentResult
+from nova.order_details import extract_product
 from nova.orders import OrderRepository, VerificationStatus, verify_order
 from nova.repository import StateRepository
 from nova.workflow import NovaState, Step, Status, extract_order_id, route
@@ -103,8 +104,15 @@ class WorkflowService:
                         return classification.clarification_question or "¿Puedes aclarar tu solicitud?"
                     if classification.intent.value in {"CANCEL", "POLICY_QUESTION", "RESUME", "RETURN_REQUEST"}:
                         return route(state, message, resolved_intent=classification.intent.value)
+                extraction = extract_product(detail)
+                if extraction.needs_clarification:
+                    return (
+                        "No pude identificar un único producto con seguridad. "
+                        "¿Fue un televisor o unos audífonos?"
+                    )
                 result = verify_order(
-                    self.order_repository, state.pending_order_id, product=detail
+                    self.order_repository, state.pending_order_id,
+                    product=extraction.product,
                 )
                 if result.status == VerificationStatus.MATCH:
                     state.order_id = state.pending_order_id
