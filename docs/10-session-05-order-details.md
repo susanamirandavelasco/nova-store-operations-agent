@@ -31,3 +31,7 @@ A small, explicitly limited set of Spanish uncertainty phrases (for example, `cr
 ## Increment 4 — Optional OpenAI structured extraction
 
 `OpenAIProductExtractor` implements `ProductExtractor` using an optional OpenAI dependency and a strict JSON schema (`product`, `needs_clarification`). Invalid JSON, unsupported products, API failures, missing dependencies and refusals return `ProductExtraction(None, True)`. A deterministic guard also prevents explicit uncertainty from being overridden by the model. Unit tests mock the API: no network calls or token charges. The default extractor remains rule-based; real API usage requires explicit injection and `OPENAI_API_KEY`. This is not production authorization or return eligibility.
+
+## Increment 5 — Exploratory real-model comparison
+
+User executed 5 examples in Codespaces with both extractors. The LLM recognized `auriculares inalámbricos` as `audífonos` where the deterministic extractor requested clarification. Both extractors requested clarification for explicit uncertainty, two possible products and an unsupported refrigerator; both recognized `televisión` as `televisor`. All five outcomes matched expectations, but this small manually selected sample is not a measured accuracy or production-readiness claim. User also reported `62 passed in 0.15s` for the unit suite.
