@@ -23,3 +23,7 @@ Replace the deterministic extractor behind the same contract with an optional st
 ## Increment 2 — Employee uncertainty
 
 A small, explicitly limited set of Spanish uncertainty phrases (for example, `creo que`, `tal vez`, `no estoy seguro`) now blocks order confirmation. The extractor returns `needs_clarification=True` even when a known product appears. The workflow retains the provisional reference until an unambiguous follow-up. This is a deterministic baseline, not a complete uncertainty detector; an LLM adapter must preserve this safety invariant.
+
+## Increment 3 — Dependency inversion
+
+`ProductExtractor` is a `Protocol` exposing `extract(message) -> ProductExtraction`. `RuleBasedProductExtractor` is the default implementation, preserving existing behavior. `WorkflowService` accepts an optional injected extractor, enabling a future LLM adapter or a test stub. Clarification, empty products, and out-of-vocabulary canonical values are rejected before verification. This is an extension point, **not yet a live LLM integration**.
