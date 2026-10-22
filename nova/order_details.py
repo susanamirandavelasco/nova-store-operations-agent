@@ -33,7 +33,12 @@ def extract_product(message: str) -> ProductExtraction:
             for alias in aliases
         )
     }
-    # Negation and multiple products require clarification; never guess.
-    if len(matches) != 1 or re.search(r"\b(no|ni|tampoco)\b", text):
+    # Explicit uncertainty blocks confirmation even if one product is recognized.
+    uncertain = any(phrase in text for phrase in (
+        "creo que", "me parece que", "no estoy seguro", "no estoy segura",
+        "no recuerdo", "tal vez", "quizá", "quizas", "puede que",
+    ))
+    # Negation, uncertainty and multiple products require clarification; never guess.
+    if len(matches) != 1 or uncertain or re.search(r"\b(no|ni|tampoco)\b", text):
         return ProductExtraction(None, True)
     return ProductExtraction(next(iter(matches)), False)
