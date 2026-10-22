@@ -24,9 +24,9 @@ The Level 1 pilot **does not execute real returns**. Progression: baseline → s
 | Session 2 — Persistence | Complete, merged | Repository abstraction, SQLite, WorkflowService, restart recovery; 14 total tests |
 | Session 3 — LLM intent classification | Complete, merged | Structured classification contract, optional OpenAI adapter, workflow integration; 28 total tests |
 | Session 4 — Order verification | Complete, merged | Fictional order lookup, provisional ID, deterministic corroboration, SQLite migration; 43 total tests |
-| Session 5 — Product extraction | In progress (feature branch) | Natural-language product extraction, empty-alias regression protection, uncertainty guard; latest tests awaiting execution |
+| Session 5 — Product extraction | In progress (feature branch) | Rule-based extraction, regression and uncertainty safeguards, injectable ProductExtractor contract; new tests pending execution |
 
-**Last locally reported test result:** `52 passed in 0.14s` in GitHub Codespaces on session 5, before the three new uncertainty tests. Current branch tests still need execution.
+**Last locally reported test result:** `55 passed in 0.19s` in GitHub Codespaces on session 5, before the three new extractor-injection tests. Current branch tests still need execution.
 
 ## Architecture (current)
 
