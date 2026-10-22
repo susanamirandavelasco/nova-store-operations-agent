@@ -52,7 +52,8 @@ def test_ambiguous_product_keeps_candidate():
     service.handle_message("a", "Quiero devolver unos audífonos")
     service.handle_message("a", "83921")
     response, state = service.handle_message("a", "audífonos y televisor")
-    assert "único producto" in response
+    assert "verificar cuál fue el producto" in response
+    assert "televisor o unos audífonos" not in response
     assert state.order_id is None
     assert state.pending_order_id == "83921"
     assert state.next_step == Step.ASK_FOR_ORDER_DETAILS
@@ -97,7 +98,7 @@ def test_uncertainty_does_not_confirm_matching_order():
     response, state = service.handle_message(
         "uncertain", "Creo que eran audífonos, pero no estoy seguro"
     )
-    assert "único producto" in response
+    assert "verificar cuál fue el producto" in response
     assert state.pending_order_id == "83921"
     assert state.order_id is None
     assert state.next_step == Step.ASK_FOR_ORDER_DETAILS
