@@ -160,3 +160,85 @@ def test_injected_unknown_product_cannot_bypass_validation():
     _, state = service.handle_message("stub", "un artículo")
     assert state.order_id is None
     assert state.pending_order_id == "83921"
+
+
+def test_llm_adapter_fails_closed_on_invalid_json(monkeypatch):
+    import sys
+    from types import SimpleNamespace
+    from nova.order_details import OpenAIProductExtractor
+
+    class FakeClient:
+        def __init__(self):
+            self.chat = SimpleNamespace(completions=SimpleNamespace(
+                create=lambda **kwargs: SimpleNamespace(choices=[
+                    SimpleNamespace(message=SimpleNamespace(content="not json"))
+                ])
+            ))
+
+    monkeypatch.setitem(sys.modules, "openai", SimpleNamespace(OpenAI=FakeClient))
+    result = OpenAIProductExtractor().extract("auriculares inalámbricos")
+    assert result.product is None
+    assert result.needs_clarification
+
+
+def test_llm_adapter_accepts_valid_structured_product(monkeypatch):
+    import sys
+    from types import SimpleNamespace
+    from nova.order_details import OpenAIProductExtractor
+
+    class FakeClient:
+        def __init__(self):
+            self.chat = SimpleNamespace(completions=SimpleNamespace(
+                create=lambda **kwargs: SimpleNamespace(choices=[
+                    SimpleNamespace(message=SimpleNamespace(
+                        content='{"product":"audífonos","needs_clarification":false}'
+                    ))
+                ])
+            ))
+
+    monkeypatch.setitem(sys.modules, "openai", SimpleNamespace(OpenAI=FakeClient))
+    result = OpenAIProductExtractor().extract("auriculares inalámbricos")
+    assert result.product == "audífonos"
+    assert not result.needs_clarification
+
+
+def test_llm_adapter_rejects_unknown_product(monkeypatch):
+    import sys
+    from types import SimpleNamespace
+    from nova.order_details import OpenAIProductExtractor
+
+    class FakeClient:
+        def __init__(self):
+            self.chat = SimpleNamespace(completions=SimpleNamespace(
+                create=lambda **kwargs: SimpleNamespace(choices=[
+                    SimpleNamespace(message=SimpleNamespace(
+                        content='{"product":"refrigerador","needs_clarification":false}'
+                    ))
+                ])
+            ))
+
+    monkeypatch.setitem(sys.modules, "openai", SimpleNamespace(OpenAI=FakeClient))
+    result = OpenAIProductExtractor().extract("un refrigerador")
+    assert result.product is None
+    assert result.needs_clarification
+
+
+def test_llm_adapter_does_not_override_explicit_uncertainty(monkeypatch):
+    import sys
+    from types import SimpleNamespace
+    from nova.order_details import OpenAIProductExtractor
+
+    class FakeClient:
+        def __init__(self):
+            self.chat = SimpleNamespace(completions=SimpleNamespace(
+                create=lambda **kwargs: SimpleNamespace(choices=[
+                    SimpleNamespace(message=SimpleNamespace(
+                        content='{"product":"audífonos","needs_clarification":false}'
+                    ))
+                ])
+            ))
+
+    monkeypatch.setitem(sys.modules, "openai", SimpleNamespace(OpenAI=FakeClient))
+    result = OpenAIProductExtractor().extract("Creo que eran unos audífonos")
+    assert result.product is None
+    assert result.needs_clarification
