@@ -4,12 +4,24 @@ No LLM and no product catalog lookup. Unknown/ambiguous inputs stay unresolved.
 """
 from dataclasses import dataclass
 import re
+from typing import Protocol
 
 
 @dataclass(frozen=True)
 class ProductExtraction:
     product: str | None
     needs_clarification: bool
+
+
+class ProductExtractor(Protocol):
+    """Contract for deterministic or future LLM-backed implementations."""
+
+    def extract(self, message: str) -> ProductExtraction: ...
+
+
+class RuleBasedProductExtractor:
+    def extract(self, message: str) -> ProductExtraction:
+        return extract_product(message)
 
 
 # Deliberately small vocabulary for the fictional pilot. Do not infer products
