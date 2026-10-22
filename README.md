@@ -24,9 +24,9 @@ The Level 1 pilot **does not execute real returns**. Progression: baseline → s
 | Session 2 — Persistence | Complete, merged | Repository abstraction, SQLite, WorkflowService, restart recovery; 14 total tests |
 | Session 3 — LLM intent classification | Complete, merged | Structured classification contract, optional OpenAI adapter, workflow integration; 28 total tests |
 | Session 4 — Order verification | Complete, merged | Fictional order lookup, provisional ID, deterministic corroboration, SQLite migration; 43 total tests |
-| Session 5 — Product extraction | Complete (feature branch; awaiting merge) | Rule-based extraction, regression and uncertainty safeguards, injectable ProductExtractor contract and optional structured OpenAI adapter; 62 tests, 5-case exploratory comparison and 2 successful live end-to-end scenarios |
+| Session 5 — Product extraction | Complete, merged | Rule-based extraction, regression and uncertainty safeguards, injectable ProductExtractor contract and optional structured OpenAI adapter; 62 tests, 5-case exploratory comparison and 2 successful live end-to-end scenarios |
 
-**Last locally reported test result:** `62 passed in 0.15s` in GitHub Codespaces on session 5. An exploratory comparison of 5 real API examples matched the expected outcomes. Two user-run live end-to-end scenarios also succeeded: direct corroboration and clarification after uncertainty. These are not production reliability benchmarks.
+**Last locally reported test result:** `62 passed in 0.18s` in GitHub Codespaces on session 5, after the neutral clarification change. An exploratory comparison of 5 real API examples matched the expected outcomes. Two user-run live end-to-end scenarios also succeeded: direct corroboration and clarification after uncertainty. These are not production reliability benchmarks.
 
 ## Architecture (current)
 
