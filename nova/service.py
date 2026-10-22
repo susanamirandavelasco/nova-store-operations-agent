@@ -3,6 +3,7 @@ import re
 from typing import Protocol
 
 from nova.intent_classifier import IntentResult
+from nova.order_details import ProductExtractor, RuleBasedProductExtractor
 from nova.orders import OrderRepository, VerificationStatus, verify_order
 from nova.repository import StateRepository
 from nova.workflow import NovaState, Step, Status, extract_order_id, route
@@ -29,10 +30,12 @@ class WorkflowService:
         self, repository: StateRepository,
         classifier: IntentInterpreter | None = None,
         order_repository: OrderRepository | None = None,
+        product_extractor: ProductExtractor | None = None,
     ) -> None:
         self.repository = repository
         self.classifier = classifier
         self.order_repository = order_repository
+        self.product_extractor = product_extractor or RuleBasedProductExtractor()
 
     def handle_message(self, conversation_id: str, message: str) -> tuple[str, NovaState]:
         if not conversation_id.strip():
@@ -103,8 +106,20 @@ class WorkflowService:
                         return classification.clarification_question or "¿Puedes aclarar tu solicitud?"
                     if classification.intent.value in {"CANCEL", "POLICY_QUESTION", "RESUME", "RETURN_REQUEST"}:
                         return route(state, message, resolved_intent=classification.intent.value)
+                try:
+                    extraction = self.product_extractor.extract(detail)
+                except Exception:
+                    return "No pude interpretar el producto. ¿Puedes aclararlo?"
+                if (extraction.needs_clarification
+                        or not extraction.product
+                        or extraction.product not in {"audífonos", "televisor"}):
+                    return (
+                        "No pude identificar un único producto con seguridad. "
+                        "¿Puedes verificar cuál fue el producto comprado y confirmármelo?"
+                    )
                 result = verify_order(
-                    self.order_repository, state.pending_order_id, product=detail
+                    self.order_repository, state.pending_order_id,
+                    product=extraction.product,
                 )
                 if result.status == VerificationStatus.MATCH:
                     state.order_id = state.pending_order_id
