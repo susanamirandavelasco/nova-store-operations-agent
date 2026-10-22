@@ -35,3 +35,7 @@ A small, explicitly limited set of Spanish uncertainty phrases (for example, `cr
 ## Increment 5 — Exploratory real-model comparison
 
 User executed 5 examples in Codespaces with both extractors. The LLM recognized `auriculares inalámbricos` as `audífonos` where the deterministic extractor requested clarification. Both extractors requested clarification for explicit uncertainty, two possible products and an unsupported refrigerator; both recognized `televisión` as `televisor`. All five outcomes matched expectations, but this small manually selected sample is not a measured accuracy or production-readiness claim. User also reported `62 passed in 0.15s` for the unit suite.
+
+## Increment 6 — Live end-to-end validation
+
+The user ran two real-API end-to-end scenarios through `WorkflowService` with `OpenAIProductExtractor` and `FakeOrderRepository`. In scenario A, `auriculares inalámbricos` was interpreted as `audífonos` and provisional `83921` was corroborated. In scenario B, `Creo que eran unos auriculares, pero no estoy segura` retained `pending_order_id=83921`, `order_id=None`, `ASK_FOR_ORDER_DETAILS`; after `Confirmo que eran unos audífonos`, the state advanced to `GET_ORDER`. Both matched expectations. Session 5 implementation complete, pending merge. Future improvement: neutral clarification prompts rather than listing catalog products.
