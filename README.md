@@ -24,6 +24,7 @@ The Level 1 pilot **does not execute real returns**. Progression: baseline → s
 | Session 2 — Persistence | Complete, merged | Repository abstraction, SQLite, WorkflowService, restart recovery; 14 total tests |
 | Session 3 — LLM intent classification | Complete, merged | Structured classification contract, optional OpenAI adapter, workflow integration; 28 total tests |
 | Session 4 — Order verification | Complete, merged | Fictional order lookup, provisional ID, deterministic corroboration, SQLite migration; 43 total tests |
+| Session 5 — Product extraction | In progress (feature branch) | Conservative natural-language product extraction; tests awaiting local execution |
 
 **Last locally reported test result:** `43 passed in 0.16s` in GitHub Codespaces on session 4, plus a successful manual end-to-end test. These results were reported before the documentation-only update.
 
@@ -73,10 +74,11 @@ Set `OPENAI_API_KEY` in your environment; **never commit API keys**. The optiona
 - [Session 2 — Persistence](docs/07-session-02-persistence.md)
 - [Session 3 — Intent classification](docs/08-session-03-intent-classification.md)
 - [Session 4 — Order verification](docs/09-session-04-order-verification.md)
+- [Session 5 — Product extraction](docs/10-session-05-order-details.md)
 
 ## Next steps
 
-- Improve natural-language extraction of order details and interruption handling.
+- Expand and evaluate structured extraction of order details; improve interruption handling.
 - Enable the optional order-verification flow in an interactive demo.
 - Implement deterministic return eligibility rules using fictional order data.
 - Add RAG, tool calling, escalation, evaluations, observability, API/UI and deployment.
