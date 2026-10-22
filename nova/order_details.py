@@ -29,7 +29,7 @@ def extract_product(message: str) -> ProductExtraction:
         canonical
         for canonical, aliases in PRODUCT_ALIASES.items()
         if any(
-            re.search(r"(?<!\w)" + re.escape(alias) + r"(?!\w)", text)
+            alias.strip() and re.search(r"(?<!\w)" + re.escape(alias) + r"(?!\w)", text)
             for alias in aliases
         )
     }
