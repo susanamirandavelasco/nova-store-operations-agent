@@ -27,3 +27,7 @@ A small, explicitly limited set of Spanish uncertainty phrases (for example, `cr
 ## Increment 3 — Dependency inversion
 
 `ProductExtractor` is a `Protocol` exposing `extract(message) -> ProductExtraction`. `RuleBasedProductExtractor` is the default implementation, preserving existing behavior. `WorkflowService` accepts an optional injected extractor, enabling a future LLM adapter or a test stub. Clarification, empty products, and out-of-vocabulary canonical values are rejected before verification. This is an extension point, **not yet a live LLM integration**.
+
+## Increment 4 — Optional OpenAI structured extraction
+
+`OpenAIProductExtractor` implements `ProductExtractor` using an optional OpenAI dependency and a strict JSON schema (`product`, `needs_clarification`). Invalid JSON, unsupported products, API failures, missing dependencies and refusals return `ProductExtraction(None, True)`. A deterministic guard also prevents explicit uncertainty from being overridden by the model. Unit tests mock the API: no network calls or token charges. The default extractor remains rule-based; real API usage requires explicit injection and `OPENAI_API_KEY`. This is not production authorization or return eligibility.
