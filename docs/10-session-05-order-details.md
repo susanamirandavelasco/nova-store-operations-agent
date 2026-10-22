@@ -1,0 +1,21 @@
+# Session 05 — Product detail extraction (increment 1)
+
+**Goal:** Accept natural-language product descriptions without using the order database to guess what the employee meant.
+
+`extract_product(message) -> ProductExtraction` returns a canonical product name or requests clarification. The initial vocabulary is intentionally limited to **audífonos** and **televisor**; negations, unknown products and multiple products do not produce a guess.
+
+`WorkflowService` now calls the extractor before `verify_order`. Only a single, unambiguous extracted product can be compared with the fictional order. A mismatch or unclear phrase keeps `pending_order_id` and never advances to `GET_ORDER`.
+
+This is a deterministic pilot, not an LLM extraction or a full Spanish language parser. It does not resolve complex negation, synonyms outside the catalog, or multiple products on one order. The existing CLI remains unchanged; use `WorkflowService(..., order_repository=FakeOrderRepository())` for the verified flow.
+
+## Run
+
+```bash
+git fetch origin
+git switch feature/session-05-order-details-extraction
+python -m pytest -q
+```
+
+## Next
+
+Replace the deterministic extractor behind the same contract with an optional structured LLM adapter; add evaluation examples and robust interruption handling. Never use an order record to infer a missing user-provided verification detail.
