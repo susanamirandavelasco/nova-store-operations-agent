@@ -19,3 +19,7 @@ python -m pytest -q
 ## Next
 
 Replace the deterministic extractor behind the same contract with an optional structured LLM adapter; add evaluation examples and robust interruption handling. Never use an order record to infer a missing user-provided verification detail.
+
+## Increment 2 — Employee uncertainty
+
+A small, explicitly limited set of Spanish uncertainty phrases (for example, `creo que`, `tal vez`, `no estoy seguro`) now blocks order confirmation. The extractor returns `needs_clarification=True` even when a known product appears. The workflow retains the provisional reference until an unambiguous follow-up. This is a deterministic baseline, not a complete uncertainty detector; an LLM adapter must preserve this safety invariant.
