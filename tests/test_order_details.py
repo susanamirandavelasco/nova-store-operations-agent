@@ -56,3 +56,27 @@ def test_ambiguous_product_keeps_candidate():
     assert state.order_id is None
     assert state.pending_order_id == "83921"
     assert state.next_step == Step.ASK_FOR_ORDER_DETAILS
+
+
+def test_blank_aliases_never_match_unrelated_text(monkeypatch):
+    from nova import order_details
+
+    monkeypatch.setattr(order_details, "PRODUCT_ALIASES", {
+        "audífonos": ("", "   "),
+        "televisor": ("televisor",),
+    })
+    result = extract_product("El cliente compró unos audífonos")
+    assert result.product is None
+    assert result.needs_clarification
+
+
+def test_blank_aliases_do_not_create_false_second_product(monkeypatch):
+    from nova import order_details
+
+    monkeypatch.setattr(order_details, "PRODUCT_ALIASES", {
+        "audífonos": ("", "   "),
+        "televisor": ("televisor",),
+    })
+    result = extract_product("El cliente compró un televisor")
+    assert result.product == "televisor"
+    assert not result.needs_clarification
