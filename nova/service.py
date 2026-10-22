@@ -115,7 +115,7 @@ class WorkflowService:
                         or extraction.product not in {"audífonos", "televisor"}):
                     return (
                         "No pude identificar un único producto con seguridad. "
-                        "¿Fue un televisor o unos audífonos?"
+                        "¿Puedes verificar cuál fue el producto comprado y confirmármelo?"
                     )
                 result = verify_order(
                     self.order_repository, state.pending_order_id,
