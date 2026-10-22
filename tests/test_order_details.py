@@ -80,3 +80,37 @@ def test_blank_aliases_do_not_create_false_second_product(monkeypatch):
     result = extract_product("El cliente compró un televisor")
     assert result.product == "televisor"
     assert not result.needs_clarification
+
+
+def test_uncertain_product_requires_clarification():
+    result = extract_product("Creo que eran unos audífonos, pero no estoy segura")
+    assert result.needs_clarification
+    assert result.product is None
+
+
+def test_uncertainty_does_not_confirm_matching_order():
+    service = WorkflowService(
+        InMemoryStateRepository(), order_repository=FakeOrderRepository()
+    )
+    service.handle_message("uncertain", "Quiero devolver unos audífonos")
+    service.handle_message("uncertain", "83921")
+    response, state = service.handle_message(
+        "uncertain", "Creo que eran audífonos, pero no estoy seguro"
+    )
+    assert "único producto" in response
+    assert state.pending_order_id == "83921"
+    assert state.order_id is None
+    assert state.next_step == Step.ASK_FOR_ORDER_DETAILS
+
+
+def test_clear_confirmation_after_uncertainty_can_advance():
+    service = WorkflowService(
+        InMemoryStateRepository(), order_repository=FakeOrderRepository()
+    )
+    service.handle_message("clarify", "Quiero devolver unos audífonos")
+    service.handle_message("clarify", "83921")
+    service.handle_message("clarify", "Tal vez eran audífonos")
+    _, state = service.handle_message("clarify", "Confirmo que eran audífonos")
+    assert state.order_id == "83921"
+    assert state.pending_order_id is None
+    assert state.next_step == Step.GET_ORDER
