@@ -114,3 +114,49 @@ def test_clear_confirmation_after_uncertainty_can_advance():
     assert state.order_id == "83921"
     assert state.pending_order_id is None
     assert state.next_step == Step.GET_ORDER
+
+
+class StubExtractor:
+    def __init__(self, result):
+        self.result = result
+
+    def extract(self, message):
+        return self.result
+
+
+def test_injected_extractor_can_confirm_corroborated_order():
+    from nova.order_details import ProductExtraction
+    service = WorkflowService(
+        InMemoryStateRepository(), order_repository=FakeOrderRepository(),
+        product_extractor=StubExtractor(ProductExtraction("audífonos", False)),
+    )
+    service.handle_message("stub", "Quiero devolver unos audífonos")
+    service.handle_message("stub", "83921")
+    _, state = service.handle_message("stub", "unos auriculares inalámbricos")
+    assert state.order_id == "83921"
+
+
+def test_injected_uncertain_extraction_never_confirms():
+    from nova.order_details import ProductExtraction
+    service = WorkflowService(
+        InMemoryStateRepository(), order_repository=FakeOrderRepository(),
+        product_extractor=StubExtractor(ProductExtraction("audífonos", True)),
+    )
+    service.handle_message("stub", "Quiero devolver unos audífonos")
+    service.handle_message("stub", "83921")
+    _, state = service.handle_message("stub", "Creo que eran auriculares")
+    assert state.order_id is None
+    assert state.pending_order_id == "83921"
+
+
+def test_injected_unknown_product_cannot_bypass_validation():
+    from nova.order_details import ProductExtraction
+    service = WorkflowService(
+        InMemoryStateRepository(), order_repository=FakeOrderRepository(),
+        product_extractor=StubExtractor(ProductExtraction("inventado", False)),
+    )
+    service.handle_message("stub", "Quiero devolver unos audífonos")
+    service.handle_message("stub", "83921")
+    _, state = service.handle_message("stub", "un artículo")
+    assert state.order_id is None
+    assert state.pending_order_id == "83921"
