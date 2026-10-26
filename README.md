@@ -25,8 +25,9 @@ The Level 1 pilot **does not execute real returns**. Progression: baseline → s
 | Session 3 — LLM intent classification | Complete, merged | Structured classification contract, optional OpenAI adapter, workflow integration; 28 total tests |
 | Session 4 — Order verification | Complete, merged | Fictional order lookup, provisional ID, deterministic corroboration, SQLite migration; 43 total tests |
 | Session 5 — Product extraction | Complete, merged | Rule-based extraction, regression and uncertainty safeguards, injectable ProductExtractor contract and optional structured OpenAI adapter; 62 tests, 5-case exploratory comparison and 2 successful live end-to-end scenarios |
+| Session 6 — Return eligibility | Implemented on feature branch; PR pending | Fictional 30-day window, product condition and category rules; deterministic precedence, explainable results, optional conversational integration; 100 tests and successful user-run end-to-end demo |
 
-**Last locally reported test result:** `62 passed in 0.18s` in GitHub Codespaces on session 5, after the neutral clarification change. An exploratory comparison of 5 real API examples matched the expected outcomes. Two user-run live end-to-end scenarios also succeeded: direct corroboration and clarification after uncertainty. These are not production reliability benchmarks.
+**Last user-reported test result:** `100 passed` in GitHub Codespaces on session 6. The user also ran a successful deterministic four-message end-to-end demo yielding `ELIGIBLE` for fictional order 83921 on 2026-10-26. Session 6 is not yet merged. An exploratory comparison of 5 real API examples matched the expected outcomes. Two user-run live end-to-end scenarios also succeeded: direct corroboration and clarification after uncertainty. These are not production reliability benchmarks.
 
 ## Architecture (current)
 
@@ -39,6 +40,8 @@ Deterministic route() --> NovaState
 
 IntentClassifier --> StructuredIntentModel --> optional OpenAIIntentModel
 WorkflowService --> optional FakeOrderRepository --> verify_order
+WorkflowService --> optional return evaluator --> window + condition + category rules
+                                        --> NOT_ELIGIBLE > NEEDS_REVIEW > ELIGIBLE
 ```
 
 **Design principles:** LLM interprets ambiguous language; Python validates identifiers and business rules; workflow controls transitions; unclear requests ask for clarification instead of guessing. A provisional order ID is corroborated against fictional records before becoming a confirmed reference. Corroboration is not identity verification, authorization or return eligibility. No live order lookup or return execution exists yet.
@@ -75,12 +78,14 @@ Set `OPENAI_API_KEY` in your environment; **never commit API keys**. The optiona
 - [Session 3 — Intent classification](docs/08-session-03-intent-classification.md)
 - [Session 4 — Order verification](docs/09-session-04-order-verification.md)
 - [Session 5 — Product extraction](docs/10-session-05-order-details.md)
+- [Session 6 — Return eligibility](docs/11-session-06-return-eligibility.md)
 
 ## Next steps
 
 - Expand and evaluate structured extraction of order details; improve interruption handling.
 - Enable the optional order-verification flow in an interactive demo.
-- Implement deterministic return eligibility rules using fictional order data.
+- Improve natural-language understanding of product condition and employee-facing response formatting.
+- Enable the opt-in return-evaluation flow in the interactive CLI (currently demonstrated through WorkflowService).
 - Add RAG, tool calling, escalation, evaluations, observability, API/UI and deployment.
 
 ## Known limitations
