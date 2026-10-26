@@ -6,12 +6,15 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Protocol
 
+from nova.product_category import ProductCategory
+
 
 @dataclass(frozen=True)
 class Order:
     order_id: str
     product: str
     purchase_date: str  # ISO 8601 YYYY-MM-DD; fictitious dataset
+    category: ProductCategory = ProductCategory.UNKNOWN
 
 
 class OrderRepository(Protocol):
@@ -23,8 +26,8 @@ class FakeOrderRepository:
 
     def __init__(self) -> None:
         self.orders = {
-            "83921": Order("83921", "audífonos", "2026-10-18"),
-            "65042": Order("65042", "televisor", "2026-10-10"),
+            "83921": Order("83921", "audífonos", "2026-10-18", ProductCategory.ELECTRONICS),
+            "65042": Order("65042", "televisor", "2026-10-10", ProductCategory.ELECTRONICS),
         }
 
     def get(self, order_id: str) -> Order | None:
