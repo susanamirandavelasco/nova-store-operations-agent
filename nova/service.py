@@ -1,11 +1,16 @@
 """Application orchestration: load state, interpret message, route, persist."""
 import re
+from datetime import date
+from collections.abc import Callable
 from typing import Protocol
 
 from nova.intent_classifier import IntentResult
 from nova.order_details import ProductExtractor, RuleBasedProductExtractor
 from nova.orders import OrderRepository, VerificationStatus, verify_order
 from nova.repository import StateRepository
+from nova.product_condition import ProductCondition
+from nova.return_evaluator import evaluate_return
+from nova.eligibility_engine import CombinedEligibilityResult
 from nova.workflow import NovaState, Step, Status, extract_order_id, route
 
 
@@ -31,11 +36,15 @@ class WorkflowService:
         classifier: IntentInterpreter | None = None,
         order_repository: OrderRepository | None = None,
         product_extractor: ProductExtractor | None = None,
+        return_evaluator: Callable[..., CombinedEligibilityResult] | None = None,
+        evaluation_date: Callable[[], date] | None = None,
     ) -> None:
         self.repository = repository
         self.classifier = classifier
         self.order_repository = order_repository
         self.product_extractor = product_extractor or RuleBasedProductExtractor()
+        self.return_evaluator = return_evaluator
+        self.evaluation_date = evaluation_date or date.today
 
     def handle_message(self, conversation_id: str, message: str) -> tuple[str, NovaState]:
         if not conversation_id.strip():
@@ -81,6 +90,28 @@ class WorkflowService:
             if re.fullmatch(r"\s*(retomar|continuar)\s*", message, re.I):
                 return route(state, message, resolved_intent="RESUME")
 
+            if state.next_step == Step.ASK_FOR_PRODUCT_CONDITION and self.return_evaluator is not None:
+                condition_text = message.strip().upper()
+                try:
+                    condition = ProductCondition(condition_text)
+                except ValueError:
+                    return ("Confirma la condición del producto: SEALED, OPENED, "
+                            "DAMAGED o UNKNOWN.")
+                order = self.order_repository.get(state.order_id) if state.order_id else None
+                if order is None:
+                    return "No encontré la orden corroborada. Solicita revisión humana."
+                result = self.return_evaluator(
+                    order, self.evaluation_date(), condition=condition,
+                    category=order.category,
+                )
+                state.next_step = Step.GET_ORDER
+                reasons = "; ".join(
+                    f"{item.rule_name}: {item.result.reason}"
+                    for item in result.evaluations
+                )
+                return (f"Recomendación: {result.status.value}. {reasons}. "
+                        "No autoriza ni ejecuta la devolución.")
+
             if state.next_step == Step.ASK_FOR_ORDER_ID:
                 candidate = candidate_order_id(message)
                 if candidate is not None:
@@ -124,7 +155,12 @@ class WorkflowService:
                 if result.status == VerificationStatus.MATCH:
                     state.order_id = state.pending_order_id
                     state.pending_order_id = None
-                    state.next_step = Step.GET_ORDER
+                    state.next_step = (Step.ASK_FOR_PRODUCT_CONDITION
+                                       if self.return_evaluator is not None else Step.GET_ORDER)
+                    if self.return_evaluator is not None:
+                        return (f"Los datos coinciden con la orden {state.order_id}. "
+                                "¿Cuál es la condición del producto? "
+                                "Responde SEALED, OPENED, DAMAGED o UNKNOWN.")
                     return (
                         f"Los datos coinciden con la orden {state.order_id}. "
                         "La elegibilidad para devolución aún no está evaluada."
