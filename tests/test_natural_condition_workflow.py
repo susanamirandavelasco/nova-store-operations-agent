@@ -24,14 +24,14 @@ def start():
 def test_natural_sealed_condition_is_eligible():
     nova = start()
     response, state = nova.handle_message("a", "Está sellado")
-    assert "Recomendación: ELIGIBLE" in response
+    assert "Recomendación: Elegible para devolución" in response
     assert state.next_step == Step.GET_ORDER
 
 
 def test_natural_opened_condition_requires_review():
     nova = start()
     response, state = nova.handle_message("a", "Ya lo abrí")
-    assert "Recomendación: NEEDS_REVIEW" in response
+    assert "Recomendación: Se requiere revisión" in response
     assert state.next_step == Step.GET_ORDER
 
 
@@ -53,5 +53,5 @@ def test_clarification_then_evaluation():
     nova = start()
     nova.handle_message("a", "No sé")
     response, state = nova.handle_message("a", "Está sin abrir")
-    assert "Recomendación: ELIGIBLE" in response
+    assert "Recomendación: Elegible para devolución" in response
     assert state.next_step == Step.GET_ORDER
