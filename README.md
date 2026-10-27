@@ -26,10 +26,9 @@ The Level 1 pilot **does not execute real returns**. Progression: baseline → s
 | Session 4 — Order verification | Complete, merged | Fictional order lookup, provisional ID, deterministic corroboration, SQLite migration; 43 total tests |
 | Session 5 — Product extraction | Complete, merged | Rule-based extraction, regression and uncertainty safeguards, injectable ProductExtractor contract and optional structured OpenAI adapter; 62 tests, 5-case exploratory comparison and 2 successful live end-to-end scenarios |
 | Session 6 — Return eligibility | Complete, merged | Fictional 30-day window, product condition and category rules; deterministic precedence, explainable results, optional conversational integration; 100 tests and successful user-run end-to-end demo |
-
 | Session 7 — Natural condition + CLI | Implemented on feature branch; PR pending | Conservative condition extraction, opt-in structured OpenAI condition adapter, Spanish eligibility presenter, fictional CLI demo, SQLite continuity; 141 tests passed in Codespaces and live LLM scenario validated |
 
-**Previous session-6 validation:** `100 passed` in GitHub Codespaces on session 6. The user also ran a successful deterministic four-message end-to-end demo yielding `ELIGIBLE` for fictional order 83921 on 2026-10-26. An exploratory comparison of 5 real API examples matched the expected outcomes. Two user-run live end-to-end scenarios also succeeded: direct corroboration and clarification after uncertainty. These are not production reliability benchmarks.
+**Latest validation:** `141 passed` in GitHub Codespaces (session 7). Live OpenAI CLI checks confirmed clarification for ambiguous original packaging, `NEEDS_REVIEW` for an opened box, and `ELIGIBLE` for an explicitly sealed product. These exploratory checks are not production reliability benchmarks.
 
 ## Architecture (current)
 
@@ -42,7 +41,9 @@ Deterministic route() --> NovaState
 
 IntentClassifier --> StructuredIntentModel --> optional OpenAIIntentModel
 WorkflowService --> optional FakeOrderRepository --> verify_order
-WorkflowService --> ConditionExtractor (rules or opt-in OpenAI)\nWorkflowService --> optional return evaluator --> window + condition + category rules\nWorkflowService --> EligibilityPresenter (Spanish, deterministic)
+WorkflowService --> ConditionExtractor (rules or opt-in OpenAI)
+WorkflowService --> optional return evaluator --> window + condition + category rules
+WorkflowService --> EligibilityPresenter (Spanish, deterministic)
                                         --> NOT_ELIGIBLE > NEEDS_REVIEW > ELIGIBLE
 ```
 
@@ -67,7 +68,13 @@ Optional real LLM adapter (not required for tests):
 python -m pip install -r requirements-llm.txt
 ```
 
-Set `OPENAI_API_KEY` in your environment; **never commit API keys**. The optional adapter makes billable API calls when invoked. To use real OpenAI interpretation of the **product condition only**:\n\n```bash\npython -m nova --demo --llm-condition --conversation prueba_llm_7\n```\n\nIntent classification and product extraction in this CLI mode still use local rules. LLM responses are schema-validated; uncertain descriptions request clarification. API usage may incur charges.
+Set `OPENAI_API_KEY` in your environment; **never commit API keys**. The optional adapter makes billable API calls when invoked. To use real OpenAI interpretation of the **product condition only**:
+
+```bash
+python -m nova --demo --llm-condition --conversation prueba_llm_7
+```
+
+Intent classification and product extraction in this CLI mode still use local rules. LLM responses are schema-validated; uncertain descriptions request clarification. API usage may incur charges.
 
 ## Project documentation
 
