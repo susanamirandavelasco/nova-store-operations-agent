@@ -54,7 +54,8 @@ def test_invalid_condition_keeps_prompt():
     nova = make_service()
     verified(nova)
     response, state = nova.handle_message("session", "Creo que bien")
-    assert "Confirma la condición" in response
+    assert "No pude confirmar una única condición" in response
+    assert "¿Está sellado, abierto o dañado?" in response
     assert state.next_step == Step.ASK_FOR_PRODUCT_CONDITION
 
 
