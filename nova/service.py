@@ -5,6 +5,7 @@ from collections.abc import Callable
 from typing import Protocol
 
 from nova.condition_extraction import ConditionExtractor, RuleBasedConditionExtractor
+from nova.eligibility_presenter import present_eligibility
 from nova.intent_classifier import IntentResult
 from nova.order_details import ProductExtractor, RuleBasedProductExtractor
 from nova.orders import OrderRepository, VerificationStatus, verify_order
@@ -110,12 +111,7 @@ class WorkflowService:
                     category=order.category,
                 )
                 state.next_step = Step.GET_ORDER
-                reasons = "; ".join(
-                    f"{item.rule_name}: {item.result.reason}"
-                    for item in result.evaluations
-                )
-                return (f"Recomendación: {result.status.value}. {reasons}. "
-                        "No autoriza ni ejecuta la devolución.")
+                return present_eligibility(result)
 
             if state.next_step == Step.ASK_FOR_ORDER_ID:
                 candidate = candidate_order_id(message)
