@@ -4,6 +4,8 @@ from datetime import date
 from collections.abc import Callable
 from typing import Protocol
 
+from nova.condition_extraction import ConditionExtractor, RuleBasedConditionExtractor
+from nova.eligibility_presenter import present_eligibility
 from nova.intent_classifier import IntentResult
 from nova.order_details import ProductExtractor, RuleBasedProductExtractor
 from nova.orders import OrderRepository, VerificationStatus, verify_order
@@ -38,6 +40,7 @@ class WorkflowService:
         product_extractor: ProductExtractor | None = None,
         return_evaluator: Callable[..., CombinedEligibilityResult] | None = None,
         evaluation_date: Callable[[], date] | None = None,
+        condition_extractor: ConditionExtractor | None = None,
     ) -> None:
         self.repository = repository
         self.classifier = classifier
@@ -45,6 +48,7 @@ class WorkflowService:
         self.product_extractor = product_extractor or RuleBasedProductExtractor()
         self.return_evaluator = return_evaluator
         self.evaluation_date = evaluation_date or date.today
+        self.condition_extractor = condition_extractor or RuleBasedConditionExtractor()
 
     def handle_message(self, conversation_id: str, message: str) -> tuple[str, NovaState]:
         if not conversation_id.strip():
@@ -91,12 +95,14 @@ class WorkflowService:
                 return route(state, message, resolved_intent="RESUME")
 
             if state.next_step == Step.ASK_FOR_PRODUCT_CONDITION and self.return_evaluator is not None:
-                condition_text = message.strip().upper()
                 try:
-                    condition = ProductCondition(condition_text)
-                except ValueError:
-                    return ("Confirma la condición del producto: SEALED, OPENED, "
-                            "DAMAGED o UNKNOWN.")
+                    extraction = self.condition_extractor.extract(message)
+                except Exception:
+                    return "No pude interpretar la condición. ¿Puedes aclararla?"
+                if extraction.needs_clarification or extraction.condition is None:
+                    return ("No pude confirmar una única condición del producto. "
+                            "¿Está sellado, abierto o dañado? Si no lo sabes, responde UNKNOWN.")
+                condition = extraction.condition
                 order = self.order_repository.get(state.order_id) if state.order_id else None
                 if order is None:
                     return "No encontré la orden corroborada. Solicita revisión humana."
@@ -105,12 +111,7 @@ class WorkflowService:
                     category=order.category,
                 )
                 state.next_step = Step.GET_ORDER
-                reasons = "; ".join(
-                    f"{item.rule_name}: {item.result.reason}"
-                    for item in result.evaluations
-                )
-                return (f"Recomendación: {result.status.value}. {reasons}. "
-                        "No autoriza ni ejecuta la devolución.")
+                return present_eligibility(result)
 
             if state.next_step == Step.ASK_FOR_ORDER_ID:
                 candidate = candidate_order_id(message)

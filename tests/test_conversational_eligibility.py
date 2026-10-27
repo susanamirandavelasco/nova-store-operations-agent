@@ -35,11 +35,11 @@ def test_sealed_electronics_recommended_eligible():
     nova = make_service()
     verified(nova)
     response, state = nova.handle_message("session", "SEALED")
-    assert "Recomendación: ELIGIBLE" in response
-    assert "plazo:" in response
-    assert "condición:" in response
-    assert "categoría:" in response
-    assert "No autoriza ni ejecuta" in response
+    assert "Recomendación: Elegible para devolución" in response
+    assert "Plazo:" in response
+    assert "Condición del producto:" in response
+    assert "Categoría del producto:" in response
+    assert "no autoriza ni ejecuta" in response
     assert state.next_step == Step.GET_ORDER
 
 
@@ -47,14 +47,15 @@ def test_unknown_condition_needs_review():
     nova = make_service()
     verified(nova)
     response, _ = nova.handle_message("session", "UNKNOWN")
-    assert "Recomendación: NEEDS_REVIEW" in response
+    assert "Recomendación: Se requiere revisión" in response
 
 
 def test_invalid_condition_keeps_prompt():
     nova = make_service()
     verified(nova)
     response, state = nova.handle_message("session", "Creo que bien")
-    assert "Confirma la condición" in response
+    assert "No pude confirmar una única condición" in response
+    assert "¿Está sellado, abierto o dañado?" in response
     assert state.next_step == Step.ASK_FOR_PRODUCT_CONDITION
 
 
@@ -64,7 +65,7 @@ def test_condition_step_survives_sqlite_restart(tmp_path):
     verified(first)
     restarted = make_service(SQLiteStateRepository(path))
     response, state = restarted.handle_message("session", "SEALED")
-    assert "Recomendación: ELIGIBLE" in response
+    assert "Recomendación: Elegible para devolución" in response
     assert state.order_id == "83921"
 
 

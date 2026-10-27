@@ -25,9 +25,11 @@ The Level 1 pilot **does not execute real returns**. Progression: baseline → s
 | Session 3 — LLM intent classification | Complete, merged | Structured classification contract, optional OpenAI adapter, workflow integration; 28 total tests |
 | Session 4 — Order verification | Complete, merged | Fictional order lookup, provisional ID, deterministic corroboration, SQLite migration; 43 total tests |
 | Session 5 — Product extraction | Complete, merged | Rule-based extraction, regression and uncertainty safeguards, injectable ProductExtractor contract and optional structured OpenAI adapter; 62 tests, 5-case exploratory comparison and 2 successful live end-to-end scenarios |
-| Session 6 — Return eligibility | Implemented on feature branch; PR pending | Fictional 30-day window, product condition and category rules; deterministic precedence, explainable results, optional conversational integration; 100 tests and successful user-run end-to-end demo |
+| Session 6 — Return eligibility | Complete, merged | Fictional 30-day window, product condition and category rules; deterministic precedence, explainable results, optional conversational integration; 100 tests and successful user-run end-to-end demo |
 
-**Last user-reported test result:** `100 passed` in GitHub Codespaces on session 6. The user also ran a successful deterministic four-message end-to-end demo yielding `ELIGIBLE` for fictional order 83921 on 2026-10-26. Session 6 is not yet merged. An exploratory comparison of 5 real API examples matched the expected outcomes. Two user-run live end-to-end scenarios also succeeded: direct corroboration and clarification after uncertainty. These are not production reliability benchmarks.
+| Session 7 — Natural condition + CLI | Implemented on feature branch; PR pending | Conservative condition extraction, opt-in structured OpenAI condition adapter, Spanish eligibility presenter, fictional CLI demo, SQLite continuity; 141 tests passed in Codespaces and live LLM scenario validated |
+
+**Previous session-6 validation:** `100 passed` in GitHub Codespaces on session 6. The user also ran a successful deterministic four-message end-to-end demo yielding `ELIGIBLE` for fictional order 83921 on 2026-10-26. An exploratory comparison of 5 real API examples matched the expected outcomes. Two user-run live end-to-end scenarios also succeeded: direct corroboration and clarification after uncertainty. These are not production reliability benchmarks.
 
 ## Architecture (current)
 
@@ -40,7 +42,7 @@ Deterministic route() --> NovaState
 
 IntentClassifier --> StructuredIntentModel --> optional OpenAIIntentModel
 WorkflowService --> optional FakeOrderRepository --> verify_order
-WorkflowService --> optional return evaluator --> window + condition + category rules
+WorkflowService --> ConditionExtractor (rules or opt-in OpenAI)\nWorkflowService --> optional return evaluator --> window + condition + category rules\nWorkflowService --> EligibilityPresenter (Spanish, deterministic)
                                         --> NOT_ELIGIBLE > NEEDS_REVIEW > ELIGIBLE
 ```
 
@@ -54,9 +56,10 @@ Requires Python 3.10+.
 python -m pip install -r requirements-dev.txt
 python -m pytest -q
 python -m nova
+python -m nova --demo --conversation prueba_sesion_7
 ```
 
-The CLI uses SQLite persistence in `nova_state.sqlite3` and demo conversation `demo_001`. The database is ignored by Git. Type `salir` to exit.
+The CLI uses SQLite persistence in `nova_state.sqlite3` and default conversation `demo_001`. `--demo` enables fictional order verification and return recommendations, with a separate default conversation ID. Use `--conversation ID` to isolate or resume a session. Fictional orders: `83921` (audífonos, purchased 2026-10-18) and `65042` (televisor, purchased 2026-10-10). The database is ignored by Git. Type `salir` to exit.
 
 Optional real LLM adapter (not required for tests):
 
@@ -64,7 +67,7 @@ Optional real LLM adapter (not required for tests):
 python -m pip install -r requirements-llm.txt
 ```
 
-Set `OPENAI_API_KEY` in your environment; **never commit API keys**. The optional adapter makes billable API calls when invoked. The CLI currently uses deterministic routing until LLM integration is explicitly enabled.
+Set `OPENAI_API_KEY` in your environment; **never commit API keys**. The optional adapter makes billable API calls when invoked. To use real OpenAI interpretation of the **product condition only**:\n\n```bash\npython -m nova --demo --llm-condition --conversation prueba_llm_7\n```\n\nIntent classification and product extraction in this CLI mode still use local rules. LLM responses are schema-validated; uncertain descriptions request clarification. API usage may incur charges.
 
 ## Project documentation
 
