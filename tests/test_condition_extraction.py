@@ -36,3 +36,21 @@ def test_ambiguous_or_unsupported_description_requires_clarification(message):
     result = RuleBasedConditionExtractor().extract(message)
     assert result.condition is None
     assert result.needs_clarification
+
+
+def test_sealed_with_explicit_never_opened_is_unambiguous():
+    result = RuleBasedConditionExtractor().extract("Está sellado, nunca se abrió")
+    assert result.condition == ProductCondition.SEALED
+    assert not result.needs_clarification
+
+
+@pytest.mark.parametrize("message", [
+    "No está sellado, nunca se abrió",
+    "Está sellado, nunca se abrió, pero llegó dañado",
+    "Está sellado, nunca se abrió, no estoy segura",
+    "Está sellado, nunca se abrió, pero ya no está sellado",
+])
+def test_sealed_exception_does_not_override_negation_or_conflicting_context(message):
+    result = RuleBasedConditionExtractor().extract(message)
+    assert result.condition is None
+    assert result.needs_clarification

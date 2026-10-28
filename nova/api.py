@@ -1,0 +1,51 @@
+"""HTTP adapter for Nova's fictional return demo.
+
+Run with: uvicorn nova.api:app --reload
+"""
+from fastapi import FastAPI
+from pydantic import BaseModel, Field
+
+from nova.__main__ import build_service
+from nova.service import WorkflowService
+
+
+class ChatRequest(BaseModel):
+    conversation_id: str = Field(min_length=1, max_length=128)
+    message: str = Field(min_length=1, max_length=4000)
+
+
+class ChatResponse(BaseModel):
+    conversation_id: str
+    reply: str
+    next_step: str
+    status: str
+
+
+def create_app(service: WorkflowService | None = None) -> FastAPI:
+    """Application factory permits isolated API tests and adapter injection."""
+    app = FastAPI(title="Nova — Store Operations Agent", version="0.1.0")
+    app.state.workflow_service = service or build_service(demo=True)
+
+    @app.get("/health")
+    def health() -> dict[str, str]:
+        return {"status": "ok"}
+
+    @app.post("/chat", response_model=ChatResponse)
+    def chat(request: ChatRequest) -> ChatResponse:
+        if not request.conversation_id.strip() or not request.message.strip():
+            from fastapi import HTTPException
+            raise HTTPException(status_code=422, detail="conversation_id and message cannot be blank")
+        reply, state = app.state.workflow_service.handle_message(
+            request.conversation_id, request.message
+        )
+        return ChatResponse(
+            conversation_id=request.conversation_id,
+            reply=reply,
+            next_step=state.next_step.value,
+            status=state.status.value,
+        )
+
+    return app
+
+
+app = create_app()

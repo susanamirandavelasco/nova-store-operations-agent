@@ -27,13 +27,14 @@ The Level 1 pilot **does not execute real returns**. Progression: baseline → s
 | Session 5 — Product extraction | Complete, merged | Rule-based extraction, regression and uncertainty safeguards, injectable ProductExtractor contract and optional structured OpenAI adapter; 62 tests, 5-case exploratory comparison and 2 successful live end-to-end scenarios |
 | Session 6 — Return eligibility | Complete, merged | Fictional 30-day window, product condition and category rules; deterministic precedence, explainable results, optional conversational integration; 100 tests and successful user-run end-to-end demo |
 | Session 7 — Natural condition + CLI | Complete, merged | Conservative condition extraction, opt-in structured OpenAI condition adapter, Spanish eligibility presenter, fictional CLI demo, SQLite continuity; 141 tests passed in Codespaces and live LLM scenario validated |
+| Session 10 — FastAPI API | Complete, pending merge | `GET /health`, `POST /chat`, HTTP validation, SQLite conversation continuity, regression hardening; 153 tests passed in Codespaces |
 
-**Latest validation:** `141 passed` in GitHub Codespaces (session 7). Live OpenAI CLI checks confirmed clarification for ambiguous original packaging, `NEEDS_REVIEW` for an opened box, and `ELIGIBLE` for an explicitly sealed product. These exploratory checks are not production reliability benchmarks.
+**Latest validation:** `153 passed, 1 warning` in GitHub Codespaces (session 10). The remaining warning is a Starlette/HTTPX deprecation notice; it is not a failing test. Live OpenAI CLI checks confirmed clarification for ambiguous original packaging, `NEEDS_REVIEW` for an opened box, and `ELIGIBLE` for an explicitly sealed product. These exploratory checks are not production reliability benchmarks.
 
 ## Architecture (current)
 
 ```text
-Employee / CLI
+Employee / CLI or FastAPI HTTP
       |
 WorkflowService  --> StateRepository (in-memory or SQLite)
       |
@@ -76,6 +77,25 @@ python -m nova --demo --llm-condition --conversation prueba_llm_7
 
 Intent classification and product extraction in this CLI mode still use local rules. LLM responses are schema-validated; uncertain descriptions request clarification. API usage may incur charges.
 
+## Run the HTTP API (session 10)
+
+The API reuses the existing `WorkflowService` and SQLite persistence. It uses fictional orders and rule-based condition extraction by default; **no OpenAI API key is required**.
+
+```bash
+python -m pip install -r requirements-dev.txt -r requirements-api.txt
+python -m pytest -q
+python -m uvicorn nova.api:app --reload --host 127.0.0.1 --port 8000
+```
+
+Open `http://127.0.0.1:8000/docs` for Swagger UI. In GitHub Codespaces, start Uvicorn with `--host 0.0.0.0` and open the forwarded port's `/docs` page. **Keep the port private.**
+
+- `GET /health` returns `{"status":"ok"}` (process liveness, not database readiness).
+- `POST /chat` accepts `{"conversation_id":"demo_api_001","message":"Quiero devolver unos audífonos"}` and returns `conversation_id`, `reply`, `next_step` and `status`.
+- Reuse `conversation_id` across messages to resume a conversation. Example continuation: `83921` → `audífonos` → `Está sellado`.
+- Invalid, blank, missing or oversized inputs return HTTP 422. `conversation_id` has a 128-character maximum and `message` has a 4,000-character maximum.
+
+This is an **educational local demo**, not a production service: no authentication, production authorization, application rate limiting, concurrency-safe multi-worker state updates or real returns. See [Session 10 — FastAPI HTTP adapter](docs/12-session-10-fastapi.md) for the full contract and limitations.
+
 ## Project documentation
 
 - [Business case](docs/01-business-case.md)
@@ -89,14 +109,14 @@ Intent classification and product extraction in this CLI mode still use local ru
 - [Session 4 — Order verification](docs/09-session-04-order-verification.md)
 - [Session 5 — Product extraction](docs/10-session-05-order-details.md)
 - [Session 6 — Return eligibility](docs/11-session-06-return-eligibility.md)
+- [Session 10 — FastAPI HTTP adapter](docs/12-session-10-fastapi.md)
 
-## Next steps
+## Next steps — Demo First
 
-- Expand and evaluate structured extraction of order details; improve interruption handling.
-- Enable the optional order-verification flow in an interactive demo.
-- Improve natural-language understanding of product condition and employee-facing response formatting.
-- Enable the opt-in return-evaluation flow in the interactive CLI (currently demonstrated through WorkflowService).
-- Add RAG, tool calling, escalation, evaluations, observability, API/UI and deployment.
+- **Session 11:** web chat UI using the session-10 HTTP API.
+- **Session 12:** Docker packaging and local **Demo 1** (UI → API → workflow → SQLite).
+- **Sessions 8–9:** policy RAG, escalation and evaluation for **Demo 2**.
+- **Sessions 13–15:** cloud deployment, observability, security, CI/CD and final portfolio validation for **Demo 3**.
 
 ## Known limitations
 
