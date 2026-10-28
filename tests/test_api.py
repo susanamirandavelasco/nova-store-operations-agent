@@ -59,3 +59,30 @@ def test_chat_isolates_conversations():
     api.post("/chat", json={"conversation_id": "one", "message": "Quiero devolver audífonos"})
     other = api.post("/chat", json={"conversation_id": "two", "message": "83921"})
     assert other.json()["next_step"] == "UNDERSTAND"
+
+
+def test_chat_rejects_malformed_payloads_and_excessive_lengths():
+    api = client()
+    cases = [
+        None,
+        [],
+        {"conversation_id": "c", "message": 123},
+        {"conversation_id": "c", "message": "x" * 4001},
+        {"conversation_id": "x" * 129, "message": "hola"},
+        {"conversation_id": "c", "message": None},
+    ]
+    for payload in cases:
+        response = api.post("/chat", json=payload)
+        assert response.status_code == 422
+
+
+def test_chat_rejects_wrong_http_method():
+    assert client().get("/chat").status_code == 405
+
+
+def test_api_response_exposes_only_public_contract_fields():
+    response = client().post(
+        "/chat", json={"conversation_id": "c", "message": "Quiero devolver unos audífonos"}
+    )
+    assert response.status_code == 200
+    assert set(response.json()) == {"conversation_id", "reply", "next_step", "status"}
