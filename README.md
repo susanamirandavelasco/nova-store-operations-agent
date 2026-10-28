@@ -28,7 +28,7 @@ The Level 1 pilot **does not execute real returns**. Progression: baseline → s
 | Session 6 — Return eligibility | Complete, merged | Fictional 30-day window, product condition and category rules; deterministic precedence, explainable results, optional conversational integration; 100 tests and successful user-run end-to-end demo |
 | Session 7 — Natural condition + CLI | Complete, merged | Conservative condition extraction, opt-in structured OpenAI condition adapter, Spanish eligibility presenter, fictional CLI demo, SQLite continuity; 141 tests passed in Codespaces and live LLM scenario validated |
 
-**Latest validation:** `141 passed` in GitHub Codespaces (session 7). Live OpenAI CLI checks confirmed clarification for ambiguous original packaging, `NEEDS_REVIEW` for an opened box, and `ELIGIBLE` for an explicitly sealed product. These exploratory checks are not production reliability benchmarks.
+**Latest confirmed validation:** `146 passed, 1 warning` in GitHub Codespaces (session 10 before the additional hardening tests). Rerun the full suite before merging. Live OpenAI CLI checks confirmed clarification for ambiguous original packaging, `NEEDS_REVIEW` for an opened box, and `ELIGIBLE` for an explicitly sealed product. These exploratory checks are not production reliability benchmarks.
 
 ## Architecture (current)
 
@@ -89,6 +89,7 @@ Intent classification and product extraction in this CLI mode still use local ru
 - [Session 4 — Order verification](docs/09-session-04-order-verification.md)
 - [Session 5 — Product extraction](docs/10-session-05-order-details.md)
 - [Session 6 — Return eligibility](docs/11-session-06-return-eligibility.md)
+- [Session 10 — FastAPI HTTP adapter](docs/12-session-10-fastapi.md)
 
 ## Next steps
 
