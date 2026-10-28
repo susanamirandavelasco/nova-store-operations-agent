@@ -36,3 +36,9 @@ def test_ambiguous_or_unsupported_description_requires_clarification(message):
     result = RuleBasedConditionExtractor().extract(message)
     assert result.condition is None
     assert result.needs_clarification
+
+
+def test_sealed_with_explicit_never_opened_is_unambiguous():
+    result = RuleBasedConditionExtractor().extract("Está sellado, nunca se abrió")
+    assert result.condition == ProductCondition.SEALED
+    assert not result.needs_clarification
