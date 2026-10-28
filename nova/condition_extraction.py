@@ -58,6 +58,15 @@ class RuleBasedConditionExtractor:
         }
         if len(matches) != 1:
             return ConditionExtraction(None, True)
+        # Explicit "sealed, never opened" reinforces a sealed condition.
+        # Other negations continue to require clarification.
         if re.search(r"\b(no|nunca|ni)\b", text) and not re.search(r"\bsin abrir\b", text):
-            return ConditionExtraction(None, True)
+            sealed_and_never_opened = (
+                matches == {ProductCondition.SEALED}
+                and re.search(r"\bsellad[oa]s?\b", text)
+                and re.search(r"\bnunca se abrio\b", text)
+                and not re.search(r"\bno (?:esta|estaba|venia) sellad[oa]s?\b", text)
+            )
+            if not sealed_and_never_opened:
+                return ConditionExtraction(None, True)
         return ConditionExtraction(next(iter(matches)), False)
