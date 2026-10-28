@@ -64,8 +64,10 @@ class RuleBasedConditionExtractor:
             sealed_and_never_opened = (
                 matches == {ProductCondition.SEALED}
                 and re.search(r"\bsellad[oa]s?\b", text)
-                and re.search(r"\bnunca se abrio\b", text)
-                and not re.search(r"\bno (?:esta|estaba|venia) sellad[oa]s?\b", text)
+                and re.fullmatch(
+                    r"(?:esta )?sellad[oa]s?\s*[,;.]?\s*nunca se abrio[.!]?",
+                    text,
+                )
             )
             if not sealed_and_never_opened:
                 return ConditionExtraction(None, True)
