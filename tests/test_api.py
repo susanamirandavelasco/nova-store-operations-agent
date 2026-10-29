@@ -102,3 +102,25 @@ def test_web_chat_home_and_static_assets():
     stylesheet = api.get("/ui/style.css")
     assert stylesheet.status_code == 200
     assert ".bubble" in stylesheet.text
+
+
+def test_condition_prompt_uses_employee_friendly_language():
+    api = client()
+    cid = "natural-prompt"
+    for message in ("Quiero devolver unos audífonos", "83921"):
+        response = api.post("/chat", json={"conversation_id": cid, "message": message})
+        assert response.status_code == 200
+    response = api.post("/chat", json={"conversation_id": cid, "message": "audífonos"})
+    assert response.status_code == 200
+    assert "¿está sellado, fue abierto o presenta algún daño?" in response.json()["reply"]
+    assert "SEALED, OPENED" not in response.json()["reply"]
+
+
+def test_web_assets_contain_recommendation_and_error_feedback():
+    api = client()
+    script = api.get("/ui/app.js").text
+    stylesheet = api.get("/ui/style.css").text
+    assert 'text.startsWith("Recomendación:")' in script
+    assert "bubble.classList.add(\"recommendation\")" in script
+    assert "messages.lastElementChild.remove()" in script
+    assert ".recommendation" in stylesheet
