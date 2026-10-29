@@ -28,7 +28,8 @@ The Level 1 pilot **does not execute real returns**. Progression: baseline → s
 | Session 6 — Return eligibility | Complete, merged | Fictional 30-day window, product condition and category rules; deterministic precedence, explainable results, optional conversational integration; 100 tests and successful user-run end-to-end demo |
 | Session 7 — Natural condition + CLI | Complete, merged | Conservative condition extraction, opt-in structured OpenAI condition adapter, Spanish eligibility presenter, fictional CLI demo, SQLite continuity; 141 tests passed in Codespaces and live LLM scenario validated |
 | Session 10 — FastAPI API | Complete, merged | `GET /health`, `POST /chat`, HTTP validation, SQLite conversation continuity, regression hardening; 153 tests passed in Codespaces |
-| Session 11 — Web chat walking skeleton | Complete, pending merge | Employee-facing HTML/CSS/JavaScript chat served by FastAPI; natural condition prompt, highlighted recommendations, error handling, JavaScript syntax check; 157 tests passed in Codespaces |
+| Session 11 — Web chat walking skeleton | Complete, merged | Employee-facing HTML/CSS/JavaScript chat served by FastAPI; natural condition prompt, highlighted recommendations, error handling, JavaScript syntax check; 157 tests passed in Codespaces |
+| Session 12 — Docker packaging | In progress | Dockerfile, Compose, persistent SQLite volume, non-root single-worker runtime, healthcheck; pending Codespaces and container validation |
 
 **Latest validation:** `157 passed, 1 warning` in GitHub Codespaces (session 11). The remaining warning is a Starlette/HTTPX deprecation notice; it is not a failing test. Live OpenAI CLI checks confirmed clarification for ambiguous original packaging, `NEEDS_REVIEW` for an opened box, and `ELIGIBLE` for an explicitly sealed product. These exploratory checks are not production reliability benchmarks.
 
@@ -105,6 +106,10 @@ Install the API dependencies and run the same FastAPI server shown above. Open `
 
 The chat uses a new conversation ID on each page load and does **not** restore visible history after refresh. A network error preserves the message for manual retry; a previous request might already have reached the backend. The UI is a fictional educational demo and is not suitable for real customer data. See [Session 11 — Web chat walking skeleton](docs/13-session-11-web-chat.md).
 
+## Run Demo 1 with Docker (session 12)
+
+Requires Docker with Compose v2. Run `docker compose up --build -d`, then open `http://localhost:8000/`. The database lives in the named Docker volume `nova_data`, so `docker compose down` preserves it; **`docker compose down -v` deletes it**. The service binds to local loopback only and is **not safe for public exposure**. See [Session 12 — Docker packaging](docs/14-session-12-docker.md) for smoke tests and Codespaces notes. Docker validation is pending.
+
 ## Project documentation
 
 - [Business case](docs/01-business-case.md)
@@ -120,11 +125,12 @@ The chat uses a new conversation ID on each page load and does **not** restore v
 - [Session 6 — Return eligibility](docs/11-session-06-return-eligibility.md)
 - [Session 10 — FastAPI HTTP adapter](docs/12-session-10-fastapi.md)
 - [Session 11 — Web chat walking skeleton](docs/13-session-11-web-chat.md)
+- [Session 12 — Docker packaging](docs/14-session-12-docker.md)
 
 ## Next steps — Demo First
 
 - **Session 11:** web chat walking skeleton completed; pending merge.
-- **Session 12:** Docker packaging and local **Demo 1** (UI → API → workflow → SQLite).
+- **Session 12:** Docker packaging and local **Demo 1** (UI → API → workflow → SQLite); implementation pending validation.
 - **Sessions 8–9:** policy RAG, escalation and evaluation for **Demo 2**.
 - **Sessions 13–15:** cloud deployment, observability, security, CI/CD and final portfolio validation for **Demo 3**.
 
