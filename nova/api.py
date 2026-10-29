@@ -2,7 +2,11 @@
 
 Run with: uvicorn nova.api:app --reload
 """
+from pathlib import Path
+
 from fastapi import FastAPI
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from nova.__main__ import build_service
@@ -25,6 +29,12 @@ def create_app(service: WorkflowService | None = None) -> FastAPI:
     """Application factory permits isolated API tests and adapter injection."""
     app = FastAPI(title="Nova — Store Operations Agent", version="0.1.0")
     app.state.workflow_service = service or build_service(demo=True)
+    web_dir = Path(__file__).resolve().parent / "web"
+    app.mount("/ui", StaticFiles(directory=web_dir), name="ui")
+
+    @app.get("/", include_in_schema=False)
+    def home() -> FileResponse:
+        return FileResponse(web_dir / "index.html")
 
     @app.get("/health")
     def health() -> dict[str, str]:

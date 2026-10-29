@@ -27,14 +27,17 @@ The Level 1 pilot **does not execute real returns**. Progression: baseline → s
 | Session 5 — Product extraction | Complete, merged | Rule-based extraction, regression and uncertainty safeguards, injectable ProductExtractor contract and optional structured OpenAI adapter; 62 tests, 5-case exploratory comparison and 2 successful live end-to-end scenarios |
 | Session 6 — Return eligibility | Complete, merged | Fictional 30-day window, product condition and category rules; deterministic precedence, explainable results, optional conversational integration; 100 tests and successful user-run end-to-end demo |
 | Session 7 — Natural condition + CLI | Complete, merged | Conservative condition extraction, opt-in structured OpenAI condition adapter, Spanish eligibility presenter, fictional CLI demo, SQLite continuity; 141 tests passed in Codespaces and live LLM scenario validated |
-| Session 10 — FastAPI API | Complete, pending merge | `GET /health`, `POST /chat`, HTTP validation, SQLite conversation continuity, regression hardening; 153 tests passed in Codespaces |
+| Session 10 — FastAPI API | Complete, merged | `GET /health`, `POST /chat`, HTTP validation, SQLite conversation continuity, regression hardening; 153 tests passed in Codespaces |
+| Session 11 — Web chat walking skeleton | Complete, pending merge | Employee-facing HTML/CSS/JavaScript chat served by FastAPI; natural condition prompt, highlighted recommendations, error handling, JavaScript syntax check; 157 tests passed in Codespaces |
 
-**Latest validation:** `153 passed, 1 warning` in GitHub Codespaces (session 10). The remaining warning is a Starlette/HTTPX deprecation notice; it is not a failing test. Live OpenAI CLI checks confirmed clarification for ambiguous original packaging, `NEEDS_REVIEW` for an opened box, and `ELIGIBLE` for an explicitly sealed product. These exploratory checks are not production reliability benchmarks.
+**Latest validation:** `157 passed, 1 warning` in GitHub Codespaces (session 11). The remaining warning is a Starlette/HTTPX deprecation notice; it is not a failing test. Live OpenAI CLI checks confirmed clarification for ambiguous original packaging, `NEEDS_REVIEW` for an opened box, and `ELIGIBLE` for an explicitly sealed product. These exploratory checks are not production reliability benchmarks.
 
 ## Architecture (current)
 
 ```text
-Employee / CLI or FastAPI HTTP
+Employee / CLI or web chat (HTML/CSS/JavaScript)
+      |
+FastAPI HTTP (`/`, `/ui/*`, `POST /chat`)
       |
 WorkflowService  --> StateRepository (in-memory or SQLite)
       |
@@ -96,6 +99,12 @@ Open `http://127.0.0.1:8000/docs` for Swagger UI. In GitHub Codespaces, start Uv
 
 This is an **educational local demo**, not a production service: no authentication, production authorization, application rate limiting, concurrency-safe multi-worker state updates or real returns. See [Session 10 — FastAPI HTTP adapter](docs/12-session-10-fastapi.md) for the full contract and limitations.
 
+## Run the web chat (session 11)
+
+Install the API dependencies and run the same FastAPI server shown above. Open `http://127.0.0.1:8000/` (without `/docs`) to use the employee-facing chat. In Codespaces, forward port 8000 privately and open its root URL. The browser sends JSON to `POST /chat` on the same origin; no separate frontend server or OpenAI API key is required.
+
+The chat uses a new conversation ID on each page load and does **not** restore visible history after refresh. A network error preserves the message for manual retry; a previous request might already have reached the backend. The UI is a fictional educational demo and is not suitable for real customer data. See [Session 11 — Web chat walking skeleton](docs/13-session-11-web-chat.md).
+
 ## Project documentation
 
 - [Business case](docs/01-business-case.md)
@@ -110,10 +119,11 @@ This is an **educational local demo**, not a production service: no authenticati
 - [Session 5 — Product extraction](docs/10-session-05-order-details.md)
 - [Session 6 — Return eligibility](docs/11-session-06-return-eligibility.md)
 - [Session 10 — FastAPI HTTP adapter](docs/12-session-10-fastapi.md)
+- [Session 11 — Web chat walking skeleton](docs/13-session-11-web-chat.md)
 
 ## Next steps — Demo First
 
-- **Session 11:** web chat UI using the session-10 HTTP API.
+- **Session 11:** web chat walking skeleton completed; pending merge.
 - **Session 12:** Docker packaging and local **Demo 1** (UI → API → workflow → SQLite).
 - **Sessions 8–9:** policy RAG, escalation and evaluation for **Demo 2**.
 - **Sessions 13–15:** cloud deployment, observability, security, CI/CD and final portfolio validation for **Demo 3**.

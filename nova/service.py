@@ -161,7 +161,7 @@ class WorkflowService:
                     if self.return_evaluator is not None:
                         return (f"Los datos coinciden con la orden {state.order_id}. "
                                 "¿Cuál es la condición del producto? "
-                                "Responde SEALED, OPENED, DAMAGED o UNKNOWN.")
+                                "Por ejemplo, ¿está sellado, fue abierto o presenta algún daño? Si no lo sabes, dímelo.")
                     return (
                         f"Los datos coinciden con la orden {state.order_id}. "
                         "La elegibilidad para devolución aún no está evaluada."

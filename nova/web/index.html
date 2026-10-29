@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nova | Asistente de operaciones</title>
+  <link rel="stylesheet" href="/ui/style.css">
+  <script src="/ui/app.js" defer></script>
+</head>
+<body>
+  <main class="shell">
+    <header class="header">
+      <div class="brand"><span class="brand-icon" aria-hidden="true">✦</span><div><h1>Nova</h1><p>Asistente de operaciones · NovaRetail</p></div></div>
+      <span class="pilot">Piloto · datos ficticios</span>
+    </header>
+    <section class="chat" aria-label="Conversación con Nova">
+      <div id="messages" class="messages" role="log" aria-live="polite" aria-relevant="additions">
+        <div class="bubble assistant">¡Hola! Soy Nova. Puedo ayudarte a revisar una devolución ficticia. ¿Qué necesitas?</div>
+      </div>
+      <p id="status" class="status" role="status" aria-live="polite"></p>
+      <form id="chat-form" class="composer">
+        <label for="message" class="sr-only">Escribe tu mensaje</label>
+        <input id="message" name="message" maxlength="4000" autocomplete="off" placeholder="Escribe tu mensaje…" required autofocus>
+        <button id="send" type="submit">Enviar</button>
+      </form>
+    </section>
+    <footer>Nova solo ofrece recomendaciones del piloto. No autoriza ni ejecuta devoluciones.</footer>
+  </main>
+</body>
+</html>

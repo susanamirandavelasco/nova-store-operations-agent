@@ -86,3 +86,59 @@ def test_api_response_exposes_only_public_contract_fields():
     )
     assert response.status_code == 200
     assert set(response.json()) == {"conversation_id", "reply", "next_step", "status"}
+
+
+def test_web_chat_home_and_static_assets():
+    api = client()
+    home = api.get("/")
+    assert home.status_code == 200
+    assert "text/html" in home.headers["content-type"]
+    assert 'id="chat-form"' in home.text
+    assert 'id="messages"' in home.text
+    script = api.get("/ui/app.js")
+    assert script.status_code == 200
+    assert 'fetch("/chat"' in script.text
+    assert "textContent" in script.text
+    stylesheet = api.get("/ui/style.css")
+    assert stylesheet.status_code == 200
+    assert ".bubble" in stylesheet.text
+
+
+def test_condition_prompt_uses_employee_friendly_language():
+    api = client()
+    cid = "natural-prompt"
+    for message in ("Quiero devolver unos audífonos", "83921"):
+        response = api.post("/chat", json={"conversation_id": cid, "message": message})
+        assert response.status_code == 200
+    response = api.post("/chat", json={"conversation_id": cid, "message": "audífonos"})
+    assert response.status_code == 200
+    assert "¿está sellado, fue abierto o presenta algún daño?" in response.json()["reply"]
+    assert "SEALED, OPENED" not in response.json()["reply"]
+
+
+def test_web_assets_contain_recommendation_and_error_feedback():
+    api = client()
+    script = api.get("/ui/app.js").text
+    stylesheet = api.get("/ui/style.css").text
+    assert 'text.startsWith("Recomendación:")' in script
+    assert "bubble.classList.add(\"recommendation\")" in script
+    assert "messages.lastElementChild.remove()" in script
+    assert ".recommendation" in stylesheet
+
+
+def test_frontend_javascript_syntax_when_node_is_available():
+    """HTTP asset tests alone do not catch JavaScript parse errors."""
+    import shutil
+    import subprocess
+    from pathlib import Path
+    import pytest
+
+    node = shutil.which("node")
+    if node is None:
+        pytest.skip("Node.js is not installed; run node --check manually")
+    script = Path(__file__).resolve().parents[1] / "nova" / "web" / "app.js"
+    result = subprocess.run(
+        [node, "--check", str(script)],
+        capture_output=True, text=True, check=False,
+    )
+    assert result.returncode == 0, result.stderr
