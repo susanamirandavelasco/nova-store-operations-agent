@@ -124,3 +124,21 @@ def test_web_assets_contain_recommendation_and_error_feedback():
     assert "bubble.classList.add(\"recommendation\")" in script
     assert "messages.lastElementChild.remove()" in script
     assert ".recommendation" in stylesheet
+
+
+def test_frontend_javascript_syntax_when_node_is_available():
+    """HTTP asset tests alone do not catch JavaScript parse errors."""
+    import shutil
+    import subprocess
+    from pathlib import Path
+    import pytest
+
+    node = shutil.which("node")
+    if node is None:
+        pytest.skip("Node.js is not installed; run node --check manually")
+    script = Path(__file__).resolve().parents[1] / "nova" / "web" / "app.js"
+    result = subprocess.run(
+        [node, "--check", str(script)],
+        capture_output=True, text=True, check=False,
+    )
+    assert result.returncode == 0, result.stderr
