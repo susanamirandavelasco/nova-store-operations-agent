@@ -86,3 +86,19 @@ def test_api_response_exposes_only_public_contract_fields():
     )
     assert response.status_code == 200
     assert set(response.json()) == {"conversation_id", "reply", "next_step", "status"}
+
+
+def test_web_chat_home_and_static_assets():
+    api = client()
+    home = api.get("/")
+    assert home.status_code == 200
+    assert "text/html" in home.headers["content-type"]
+    assert 'id="chat-form"' in home.text
+    assert 'id="messages"' in home.text
+    script = api.get("/ui/app.js")
+    assert script.status_code == 200
+    assert 'fetch("/chat"' in script.text
+    assert "textContent" in script.text
+    stylesheet = api.get("/ui/style.css")
+    assert stylesheet.status_code == 200
+    assert ".bubble" in stylesheet.text
