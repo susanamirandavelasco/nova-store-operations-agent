@@ -142,3 +142,25 @@ def test_frontend_javascript_syntax_when_node_is_available():
         capture_output=True, text=True, check=False,
     )
     assert result.returncode == 0, result.stderr
+
+
+def test_api_uses_configured_sqlite_path(monkeypatch, tmp_path):
+    from nova.api import create_app
+    from fastapi.testclient import TestClient
+
+    db_path = tmp_path / "persistent" / "nova.sqlite3"
+    db_path.parent.mkdir()
+    monkeypatch.setenv("NOVA_DB_PATH", str(db_path))
+    first = TestClient(create_app())
+    response = first.post(
+        "/chat", json={"conversation_id": "volume_demo", "message": "Quiero devolver unos audífonos"}
+    )
+    assert response.status_code == 200
+    assert db_path.exists()
+
+    second = TestClient(create_app())
+    resumed = second.post(
+        "/chat", json={"conversation_id": "volume_demo", "message": "83921"}
+    )
+    assert resumed.status_code == 200
+    assert resumed.json()["next_step"] == "ASK_FOR_ORDER_DETAILS"
