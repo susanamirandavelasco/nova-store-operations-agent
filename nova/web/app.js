@@ -14,7 +14,7 @@
     const bubble = document.createElement("div");
     bubble.className = "bubble " + role;
     bubble.textContent = text; // Never interpret server/user content as HTML.
-    messages.appendChild(bubble);
+    if (role === "assistant" && text.startsWith("Recomendación:")) {\n      bubble.classList.add("recommendation");\n    }\n    messages.appendChild(bubble);
     messages.scrollTop = messages.scrollHeight;
   }
 
@@ -26,7 +26,7 @@
     input.disabled = true;
     sendButton.disabled = true;
     status.textContent = "Nova está respondiendo…";
-    addMessage(message, "user");
+    const previousCount = messages.children.length;\n    addMessage(message, "user");
     input.value = "";
     try {
       const response = await fetch("/chat", {
@@ -40,8 +40,8 @@
       addMessage(data.reply, "assistant");
       status.textContent = "";
     } catch (error) {
-      status.textContent = "No pudimos contactar a Nova. Puedes volver a enviar tu mensaje.";
-      input.value = message;
+      status.textContent = "No pudimos contactar a Nova. El mensaje se conservó para que decidas si deseas intentar de nuevo.";
+      // A failed request may or may not have reached the server. Do not\n      // automatically resend: doing so could advance the workflow twice.\n      while (messages.children.length > previousCount) {\n        messages.lastElementChild.remove();\n      }\n      input.value = message;
       console.error("Nova chat request failed:", error);
     } finally {
       pending = false;
