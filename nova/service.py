@@ -160,7 +160,7 @@ class WorkflowService:
                                        if self.return_evaluator is not None else Step.GET_ORDER)
                     if self.return_evaluator is not None:
                         return (f"Los datos coinciden con la orden {state.order_id}. "
-                                "¿En qué condiciones se encuentra el producto? "
+                                "¿Cuál es la condición del producto? "
                                 "Por ejemplo, ¿está sellado, fue abierto o presenta algún daño? Si no lo sabes, dímelo.")
                     return (
                         f"Los datos coinciden con la orden {state.order_id}. "
