@@ -45,4 +45,6 @@ The container runs as a non-root user and with one Uvicorn worker. SQLite is not
 
 ## Validation
 
-Run `python -m pytest -q` in Codespaces and perform the container smoke test above where Docker is available. An HTTP health check confirms process liveness only, not database readiness. Demo 1 is complete only after the user confirms the Docker run and persistence check.
+**Confirmed in GitHub Codespaces (2026-10-29):** `158 passed, 1 warning in 1.21s`; Docker Engine 29.8.0 and Compose 5.5.1; Uvicorn startup and HTTP 200 for `/health` and web assets; employee chat completed a fictional return recommendation inside Docker. After `docker compose down` and `docker compose up -d`, posting order `83921` to existing conversation `docker_persist_01` returned `next_step=ASK_FOR_ORDER_DETAILS`, confirming SQLite continuity across container recreation. The remaining test warning is a known Starlette/HTTPX deprecation notice. The health check establishes process liveness, not database readiness.
+
+**Demo 1 technical acceptance criteria: met.**
