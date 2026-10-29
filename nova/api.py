@@ -2,6 +2,7 @@
 
 Run with: uvicorn nova.api:app --reload
 """
+import os
 from pathlib import Path
 
 from fastapi import FastAPI
@@ -28,7 +29,9 @@ class ChatResponse(BaseModel):
 def create_app(service: WorkflowService | None = None) -> FastAPI:
     """Application factory permits isolated API tests and adapter injection."""
     app = FastAPI(title="Nova — Store Operations Agent", version="0.1.0")
-    app.state.workflow_service = service or build_service(demo=True)
+    app.state.workflow_service = service if service is not None else build_service(
+        demo=True, db_path=os.environ.get("NOVA_DB_PATH", "nova_state.sqlite3")
+    )
     web_dir = Path(__file__).resolve().parent / "web"
     app.mount("/ui", StaticFiles(directory=web_dir), name="ui")
 
