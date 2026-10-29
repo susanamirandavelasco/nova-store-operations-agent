@@ -29,9 +29,9 @@ The Level 1 pilot **does not execute real returns**. Progression: baseline → s
 | Session 7 — Natural condition + CLI | Complete, merged | Conservative condition extraction, opt-in structured OpenAI condition adapter, Spanish eligibility presenter, fictional CLI demo, SQLite continuity; 141 tests passed in Codespaces and live LLM scenario validated |
 | Session 10 — FastAPI API | Complete, merged | `GET /health`, `POST /chat`, HTTP validation, SQLite conversation continuity, regression hardening; 153 tests passed in Codespaces |
 | Session 11 — Web chat walking skeleton | Complete, merged | Employee-facing HTML/CSS/JavaScript chat served by FastAPI; natural condition prompt, highlighted recommendations, error handling, JavaScript syntax check; 157 tests passed in Codespaces |
-| Session 12 — Docker packaging | In progress | Dockerfile, Compose, persistent SQLite volume, non-root single-worker runtime, healthcheck; pending Codespaces and container validation |
+| Session 12 — Docker packaging | Complete, pending merge | Dockerfile, Compose, persistent SQLite volume, non-root single-worker runtime, healthcheck; 158 tests passed and Docker chat/persistence validated in Codespaces |
 
-**Latest validation:** `157 passed, 1 warning` in GitHub Codespaces (session 11). The remaining warning is a Starlette/HTTPX deprecation notice; it is not a failing test. Live OpenAI CLI checks confirmed clarification for ambiguous original packaging, `NEEDS_REVIEW` for an opened box, and `ELIGIBLE` for an explicitly sealed product. These exploratory checks are not production reliability benchmarks.
+**Latest validation:** `158 passed, 1 warning` in GitHub Codespaces (session 12). Docker chat, health endpoint and SQLite state continuity across container recreation were also validated. The remaining warning is a Starlette/HTTPX deprecation notice; it is not a failing test. Live OpenAI CLI checks confirmed clarification for ambiguous original packaging, `NEEDS_REVIEW` for an opened box, and `ELIGIBLE` for an explicitly sealed product. These exploratory checks are not production reliability benchmarks.
 
 ## Architecture (current)
 
@@ -108,7 +108,7 @@ The chat uses a new conversation ID on each page load and does **not** restore v
 
 ## Run Demo 1 with Docker (session 12)
 
-Requires Docker with Compose v2. Run `docker compose up --build -d`, then open `http://localhost:8000/`. The database lives in the named Docker volume `nova_data`, so `docker compose down` preserves it; **`docker compose down -v` deletes it**. The service binds to local loopback only and is **not safe for public exposure**. See [Session 12 — Docker packaging](docs/14-session-12-docker.md) for smoke tests and Codespaces notes. Docker validation is pending.
+Requires Docker with Compose v2. Run `docker compose up --build -d`, then open `http://localhost:8000/`. The database lives in the named Docker volume `nova_data`, so `docker compose down` preserves it; **`docker compose down -v` deletes it**. The service binds to local loopback only and is **not safe for public exposure**. See [Session 12 — Docker packaging](docs/14-session-12-docker.md) for smoke tests and Codespaces notes. Docker validation completed in Codespaces: the chat returned an eligibility recommendation; after `docker compose down` and `docker compose up -d`, the conversation `docker_persist_01` continued with `next_step=ASK_FOR_ORDER_DETAILS`.
 
 ## Project documentation
 
@@ -130,7 +130,7 @@ Requires Docker with Compose v2. Run `docker compose up --build -d`, then open `
 ## Next steps — Demo First
 
 - **Session 11:** web chat walking skeleton completed; pending merge.
-- **Session 12:** Docker packaging and local **Demo 1** (UI → API → workflow → SQLite); implementation pending validation.
+- **Session 12:** Docker packaging and local **Demo 1** (UI → API → workflow → SQLite) validated; pending merge.
 - **Sessions 8–9:** policy RAG, escalation and evaluation for **Demo 2**.
 - **Sessions 13–15:** cloud deployment, observability, security, CI/CD and final portfolio validation for **Demo 3**.
 
