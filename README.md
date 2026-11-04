@@ -29,7 +29,8 @@ The Level 1 pilot **does not execute real returns**. Progression: baseline → s
 | Session 7 — Natural condition + CLI | Complete, merged | Conservative condition extraction, opt-in structured OpenAI condition adapter, Spanish eligibility presenter, fictional CLI demo, SQLite continuity; 141 tests passed in Codespaces and live LLM scenario validated |
 | Session 10 — FastAPI API | Complete, merged | `GET /health`, `POST /chat`, HTTP validation, SQLite conversation continuity, regression hardening; 153 tests passed in Codespaces |
 | Session 11 — Web chat walking skeleton | Complete, merged | Employee-facing HTML/CSS/JavaScript chat served by FastAPI; natural condition prompt, highlighted recommendations, error handling, JavaScript syntax check; 157 tests passed in Codespaces |
-| Session 12 — Docker packaging | Complete, pending merge | Dockerfile, Compose, persistent SQLite volume, non-root single-worker runtime, healthcheck; 158 tests passed and Docker chat/persistence validated in Codespaces |
+| Session 12 — Docker packaging | Complete | Dockerfile, Compose, persistent SQLite volume, non-root single-worker runtime, healthcheck; Docker chat/persistence validated in Codespaces |
+| Session 8 — Policy retrieval (increment 1) | Integration validated; semantic RAG pending | Source-attributed lexical retrieval, safe abstention, workflow interruption/resumption, Docker chat smoke test; 167 tests passed before final resume-prompt adjustment |
 
 **Latest validation:** `158 passed, 1 warning` in GitHub Codespaces (session 12). Docker chat, health endpoint and SQLite state continuity across container recreation were also validated. The remaining warning is a Starlette/HTTPX deprecation notice; it is not a failing test. Live OpenAI CLI checks confirmed clarification for ambiguous original packaging, `NEEDS_REVIEW` for an opened box, and `ELIGIBLE` for an explicitly sealed product. These exploratory checks are not production reliability benchmarks.
 
@@ -110,6 +111,10 @@ The chat uses a new conversation ID on each page load and does **not** restore v
 
 Requires Docker with Compose v2. Run `docker compose up --build -d`, then open `http://localhost:8000/`. The database lives in the named Docker volume `nova_data`, so `docker compose down` preserves it; **`docker compose down -v` deletes it**. The service binds to local loopback only and is **not safe for public exposure**. See [Session 12 — Docker packaging](docs/14-session-12-docker.md) for smoke tests and Codespaces notes. Docker validation completed in Codespaces: the chat returned an eligibility recommendation; after `docker compose down` and `docker compose up -d`, the conversation `docker_persist_01` continued with `next_step=ASK_FOR_ORDER_DETAILS`.
 
+## Policy retrieval — Session 8 (first increment)
+
+The fictional demo can now answer explicit policy questions with a source identifier and suspend/resume a return without discarding the pending order. This is **lexical retrieval only**, not yet semantic search or LLM-generated RAG. See [Session 8 — Policy retrieval](docs/15-session-08-policy-retrieval.md).
+
 ## Project documentation
 
 - [Business case](docs/01-business-case.md)
@@ -126,14 +131,16 @@ Requires Docker with Compose v2. Run `docker compose up --build -d`, then open `
 - [Session 10 — FastAPI HTTP adapter](docs/12-session-10-fastapi.md)
 - [Session 11 — Web chat walking skeleton](docs/13-session-11-web-chat.md)
 - [Session 12 — Docker packaging](docs/14-session-12-docker.md)
+- [Session 8 — Policy retrieval (first increment)](docs/15-session-08-policy-retrieval.md)
 
 ## Next steps — Demo First
 
 - **Session 11:** web chat walking skeleton completed; pending merge.
 - **Session 12:** Docker packaging and local **Demo 1** (UI → API → workflow → SQLite) validated; pending merge.
-- **Sessions 8–9:** policy RAG, escalation and evaluation for **Demo 2**.
+- **Session 8:** lexical policy retrieval integrated and validated; semantic retrieval, grounded generation and evaluation still pending.
+- **Session 9:** escalation and evaluation for **Demo 2**.
 - **Sessions 13–15:** cloud deployment, observability, security, CI/CD and final portfolio validation for **Demo 3**.
 
 ## Known limitations
 
-No live order system, no policy RAG, no real returns, no production authentication, no concurrency-safe state updates, no formal migration framework beyond the additive SQLite column migration, or retention policy. Model output and external API failures need further hardening before production use.
+No live order system, no semantic policy RAG (only lexical retrieval), no real returns, no production authentication, no concurrency-safe state updates, no formal migration framework beyond the additive SQLite column migration, or retention policy. Model output and external API failures need further hardening before production use.
