@@ -1,6 +1,7 @@
 """Run with python -m nova; opt into fictional return demo with --demo."""
 import argparse
 
+from nova.policy_retrieval import PolicyRetriever
 from nova.orders import FakeOrderRepository
 from nova.repository import SQLiteStateRepository
 from nova.return_evaluator import evaluate_return
@@ -19,6 +20,7 @@ def build_service(*, demo: bool = False, llm_condition: bool = False, db_path: s
             order_repository=FakeOrderRepository(),
             return_evaluator=evaluate_return,
             condition_extractor=OpenAIConditionExtractor() if llm_condition else None,
+            policy_retriever=PolicyRetriever(),
         )
     return WorkflowService(repository)
 
