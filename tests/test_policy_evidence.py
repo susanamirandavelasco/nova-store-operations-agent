@@ -44,3 +44,8 @@ def test_unsupported_question_abstains_without_source(question, passage):
 def test_cannot_claim_evidence_when_policy_fact_is_missing():
     altered = PolicyPassage(PLAZO.source_id, PLAZO.title, "Texto sin el plazo.", PLAZO.keywords)
     assert not assess_evidence("¿Cuál es el plazo de devolución?", altered).supported
+
+def test_manufacturer_warranty_rejection_reason():
+    decision = assess_evidence("¿Qué garantía da el fabricante?", ESTADO)
+    assert decision.supported is False
+    assert decision.reason == "manufacturer_warranty_not_covered"
