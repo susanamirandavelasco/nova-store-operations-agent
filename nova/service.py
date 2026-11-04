@@ -10,6 +10,7 @@ from nova.intent_classifier import IntentResult
 from nova.order_details import ProductExtractor, RuleBasedProductExtractor
 from nova.orders import OrderRepository, VerificationStatus, verify_order
 from nova.repository import StateRepository
+from nova.policy_retrieval import PolicyRetriever
 from nova.product_condition import ProductCondition
 from nova.return_evaluator import evaluate_return
 from nova.eligibility_engine import CombinedEligibilityResult
@@ -41,6 +42,7 @@ class WorkflowService:
         return_evaluator: Callable[..., CombinedEligibilityResult] | None = None,
         evaluation_date: Callable[[], date] | None = None,
         condition_extractor: ConditionExtractor | None = None,
+        policy_retriever: PolicyRetriever | None = None,
     ) -> None:
         self.repository = repository
         self.classifier = classifier
@@ -49,6 +51,7 @@ class WorkflowService:
         self.return_evaluator = return_evaluator
         self.evaluation_date = evaluation_date or date.today
         self.condition_extractor = condition_extractor or RuleBasedConditionExtractor()
+        self.policy_retriever = policy_retriever
 
     def handle_message(self, conversation_id: str, message: str) -> tuple[str, NovaState]:
         if not conversation_id.strip():
@@ -58,7 +61,12 @@ class WorkflowService:
         if state is None:
             state = NovaState()
 
-        if self.order_repository is not None:
+        if self.policy_retriever is not None and self._is_explicit_policy_question(message):
+            route(state, message, resolved_intent="POLICY_QUESTION")
+            answer = self.policy_retriever.answer(message)
+            response = (f"{answer.text}\nFuente: {answer.title} ({answer.source_id})"
+                        if answer.source_id else answer.text)
+        elif self.order_repository is not None:
             response = self._handle_with_orders(state, message)
         elif self.classifier is None:
             response = route(state, message)
@@ -71,6 +79,15 @@ class WorkflowService:
 
         self.repository.save(conversation_id, state)
         return response, state
+
+    @staticmethod
+    def _is_explicit_policy_question(message: str) -> bool:
+        """Narrow trigger: do not confuse product condition with a policy query."""
+        return bool(re.search(
+            r"\b(pol[ií]tica|pol[ií]ticas|garant[ií]a|garant[ií]as|plazo)\b"
+            r"|\bcu[aá]ntos? d[ií]as\b",
+            message, re.IGNORECASE,
+        ))
 
     def _classify_and_route(self, state: NovaState, message: str) -> str:
         try:
