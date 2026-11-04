@@ -34,7 +34,9 @@ def test_policy_interruption_preserves_pending_order_and_resumes():
     assert interrupted.status == Status.SUSPENDED
     assert interrupted.pending_order_id == "83921"
     assert interrupted.next_step == Step.ASK_FOR_ORDER_DETAILS
-    _, resumed = nova.handle_message("p2", "retomar")
+    resume_reply, resumed = nova.handle_message("p2", "retomar")
+    assert "¿Qué producto se compró?" in resume_reply
+    assert "número de orden" not in resume_reply
     assert resumed.status == Status.ACTIVE
     assert resumed.pending_order_id == "83921"
     assert resumed.next_step == Step.ASK_FOR_ORDER_DETAILS
