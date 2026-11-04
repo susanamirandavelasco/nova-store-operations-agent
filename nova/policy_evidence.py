@@ -31,7 +31,11 @@ def assess_evidence(question: str, passage: PolicyPassage) -> EvidenceDecision:
     if not q:
         return EvidenceDecision(False, "empty_question")
 
-    # A manufacturer warranty is distinct from acceptance of a return.\n    if re.search(r"garantia.{0,35}fabricante|fabricante.{0,35}garantia", q):\n        return EvidenceDecision(False, "manufacturer_warranty_not_covered")\n\n    # Unsupported topics can share words with a relevant policy.
+    # A manufacturer warranty is distinct from acceptance of a return.
+    if re.search(r"garantia.{0,35}fabricante|fabricante.{0,35}garantia", q):
+        return EvidenceDecision(False, "manufacturer_warranty_not_covered")
+
+    # Unsupported topics can share words with a relevant policy.
     if re.search(r"reembols|tarjeta|banco|deposit|acredit|envio|paqueter|horario|sucursal|contrasena|pagar|meses sin intereses", q):
         return EvidenceDecision(False, "unsupported_topic")
 
