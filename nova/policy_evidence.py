@@ -31,8 +31,8 @@ def assess_evidence(question: str, passage: PolicyPassage) -> EvidenceDecision:
     if not q:
         return EvidenceDecision(False, "empty_question")
 
-    # Unsupported topics can share words with a relevant policy.
-    if re.search(r"reembols|tarjeta|banco|deposit|acredit|envio|paqueter|horario|sucursal|contrasena|pagar|meses sin intereses|garantia (?:del|de) fabricant", q):
+    # A manufacturer warranty is distinct from acceptance of a return.\n    if re.search(r"garantia.{0,35}fabricante|fabricante.{0,35}garantia", q):\n        return EvidenceDecision(False, "manufacturer_warranty_not_covered")\n\n    # Unsupported topics can share words with a relevant policy.
+    if re.search(r"reembols|tarjeta|banco|deposit|acredit|envio|paqueter|horario|sucursal|contrasena|pagar|meses sin intereses", q):
         return EvidenceDecision(False, "unsupported_topic")
 
     if passage.source_id == "POL-RET-001#plazo":
