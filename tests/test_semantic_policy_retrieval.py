@@ -36,7 +36,9 @@ def test_unrelated_query_abstains_without_citation():
 
 
 def test_near_tie_asks_for_clarification():
-    answer = SemanticPolicyRetriever(FakeEmbedder()).answer("Pregunta ambigua")
+    # 0.707 similarity to both passages is below the default 0.75 cutoff.
+    # Lower the cutoff only for this fixture to isolate the tie-handling rule.
+    answer = SemanticPolicyRetriever(FakeEmbedder(), min_similarity=0.70).answer("Pregunta ambigua")
     assert "precisar" in answer.text
     assert answer.source_id is None
 
