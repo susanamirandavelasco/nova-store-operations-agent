@@ -65,7 +65,13 @@ def route(state: NovaState, message: str, resolved_intent: str | None = None) ->
 
     if intent == "RESUME" and state.status == Status.SUSPENDED:
         state.status = Status.ACTIVE
-        return "Retomamos la devolución. ¿Cuál es el número de orden?"
+        if state.next_step == Step.ASK_FOR_ORDER_DETAILS:
+            return "Retomamos la devolución. ¿Qué producto se compró? Lo corroboraré con el registro."
+        if state.next_step == Step.ASK_FOR_PRODUCT_CONDITION:
+            return "Retomamos la devolución. ¿Está sellado, abierto o dañado el producto?"
+        if state.next_step == Step.ASK_FOR_ORDER_ID:
+            return "Retomamos la devolución. ¿Cuál es el número de orden?"
+        return "Retomamos la devolución. Puedes continuar con tu consulta."
 
     if intent == "POLICY_QUESTION":
         if state.status == Status.ACTIVE and state.intent == "RETURN_REQUEST":
