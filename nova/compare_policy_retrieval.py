@@ -22,7 +22,9 @@ def main() -> None:
     semantic = SemanticPolicyRetriever(OpenAIEmbedder())
     lexical_correct = 0
     semantic_correct = 0
-    # Embed all questions once to inspect raw scores without extra API calls per policy.\n    query_vectors = semantic.embedder.embed([question for question, _ in CASES])\n    for (question, expected), query_vector in zip(CASES, query_vectors):
+    # Embed all questions once to inspect raw scores without extra API calls per policy.
+    query_vectors = semantic.embedder.embed([question for question, _ in CASES])
+    for (question, expected), query_vector in zip(CASES, query_vectors):
         left = lexical.answer(question)
         right = semantic.answer(question)
         lexical_correct += left.source_id == expected
@@ -30,7 +32,15 @@ def main() -> None:
         print(f"Pregunta: {question}")
         print(f"  Esperada: {expected or 'ABSTENCIÓN'}")
         print(f"  Léxica:   {left.source_id or 'ABSTENCIÓN/ACLARACIÓN'}")
-        print(f"  Semántica:{right.source_id or 'ABSTENCIÓN/ACLARACIÓN'}")\n        scores = sorted(\n            ((cosine_similarity(query_vector, vector), passage.source_id)\n             for passage, vector in zip(semantic.passages, semantic.vectors)),\n            reverse=True,\n        )\n        print("  Scores:   " + ", ".join(f"{source}={score:.4f}" for score, source in scores))\n        if right.source_id is None:\n            print(f"  Motivo:   {right.text}")
+        print(f"  Semántica:{right.source_id or 'ABSTENCIÓN/ACLARACIÓN'}")
+        scores = sorted(
+            ((cosine_similarity(query_vector, vector), passage.source_id)
+             for passage, vector in zip(semantic.passages, semantic.vectors)),
+            reverse=True,
+        )
+        print("  Scores:   " + ", ".join(f"{source}={score:.4f}" for score, source in scores))
+        if right.source_id is None:
+            print(f"  Motivo:   {right.text}")
         print()
     print(f"Coincidencias con etiquetas (léxica): {lexical_correct}/{len(CASES)}")
     print(f"Coincidencias con etiquetas (semántica): {semantic_correct}/{len(CASES)}")
