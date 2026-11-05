@@ -30,7 +30,8 @@ The Level 1 pilot **does not execute real returns**. Progression: baseline → s
 | Session 10 — FastAPI API | Complete, merged | `GET /health`, `POST /chat`, HTTP validation, SQLite conversation continuity, regression hardening; 153 tests passed in Codespaces |
 | Session 11 — Web chat walking skeleton | Complete, merged | Employee-facing HTML/CSS/JavaScript chat served by FastAPI; natural condition prompt, highlighted recommendations, error handling, JavaScript syntax check; 157 tests passed in Codespaces |
 | Session 12 — Docker packaging | Complete | Dockerfile, Compose, persistent SQLite volume, non-root single-worker runtime, healthcheck; Docker chat/persistence validated in Codespaces |
-| Session 8 — Policy retrieval and experiments | Complete, merged | Lexical policy retrieval integrated into chat; semantic retrieval, evidence evaluation and V1–V3 verifiers implemented as **isolated experiments**, not wired into chat. 231 tests passed in Codespaces after Session 8. |\n| Session 9 — Evidence verifier evaluation | Complete, merged; integration deferred | V3 evaluated on 20 development cases: 14 exact classifications and 3 false-supported verdicts. V3 **not approved for integration**; deferred to the end of the post-V1 backlog. |
+| Session 8 — Policy retrieval and experiments | Complete, merged | Lexical policy retrieval integrated into chat; semantic retrieval, evidence evaluation and V1–V3 verifiers implemented as **isolated experiments**, not wired into chat. 231 tests passed in Codespaces after Session 8. |
+| Session 9 — Evidence verifier evaluation | Complete, merged; integration deferred | V3 evaluated on 20 development cases: 14 exact classifications and 3 false-supported verdicts. V3 **not approved for integration**; deferred to the end of the post-V1 backlog. |
 
 **Latest confirmed full test run reported:** `231 passed, 1 warning` in GitHub Codespaces (after Session 8). Session 9 added offline tests, but a final full-suite result for Session 9 has not been reported. Docker chat, health endpoint and SQLite state continuity across container recreation were also validated. The remaining warning is a Starlette/HTTPX deprecation notice; it is not a failing test. Live OpenAI CLI checks confirmed clarification for ambiguous original packaging, `NEEDS_REVIEW` for an opened box, and `ELIGIBLE` for an explicitly sealed product. These exploratory checks are not production reliability benchmarks.
 
@@ -131,8 +132,21 @@ The fictional demo can now answer explicit policy questions with a source identi
 - [Session 10 — FastAPI HTTP adapter](docs/12-session-10-fastapi.md)
 - [Session 11 — Web chat walking skeleton](docs/13-session-11-web-chat.md)
 - [Session 12 — Docker packaging](docs/14-session-12-docker.md)
-- [Session 8 — Policy retrieval (runtime)](docs/15-session-08-policy-retrieval.md)\n- [Session 8 — Semantic retrieval experiment](docs/16-session-08-semantic-retrieval.md)\n- [Session 8 — Evidence verifier V3 experiment](docs/21-session-08-evidence-verifier-v3.md)\n- [Session 9 — Evaluation results](docs/23-session-09-v3-results-and-edge-cases.md)\n- [Session 9 — Closure and decision](docs/24-session-09-closure.md)\n- [Nova V1 — Remaining work and deferred backlog](docs/25-nova-v1-backlog.md)
+- [Session 8 — Policy retrieval (runtime)](docs/15-session-08-policy-retrieval.md)
+- [Session 8 — Semantic retrieval experiment](docs/16-session-08-semantic-retrieval.md)
+- [Session 8 — Evidence verifier V3 experiment](docs/21-session-08-evidence-verifier-v3.md)
+- [Session 9 — Evaluation results](docs/23-session-09-v3-results-and-edge-cases.md)
+- [Session 9 — Closure and decision](docs/24-session-09-closure.md)
+- [Nova V1 — Remaining work and deferred backlog](docs/25-nova-v1-backlog.md)
 
-## Next steps — Nova V1 closure\n\n1. Run end-to-end regression scenarios for the existing workflow and policy abstention.\n2. Consolidate architecture and final documentation against the verified behavior.\n3. Prepare the reproducible portfolio demo and confirm the final test run on `main`.\n\n**Post-V1 backlog (last item):** LLM evidence-verifier integration, only after independent evaluation and explicit safety criteria. See [V1 backlog](docs/25-nova-v1-backlog.md). Cloud deployment, production security and observability are not V1 completion requirements.\n\n## Known limitations
+## Next steps — Nova V1 closure
+
+1. Run end-to-end regression scenarios for the existing workflow and policy abstention.
+2. Consolidate architecture and final documentation against the verified behavior.
+3. Prepare the reproducible portfolio demo and confirm the final test run on `main`.
+
+**Post-V1 backlog (last item):** LLM evidence-verifier integration, only after independent evaluation and explicit safety criteria. See [V1 backlog](docs/25-nova-v1-backlog.md). Cloud deployment, production security and observability are not V1 completion requirements.
+
+## Known limitations
 
 No live order system, no integrated semantic policy RAG (runtime uses lexical retrieval; semantic retrieval is experimental), no real returns, no production authentication, no concurrency-safe state updates, no formal migration framework beyond the additive SQLite column migration, or retention policy. Model output and external API failures need further hardening before production use.
