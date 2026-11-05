@@ -32,8 +32,9 @@ The Level 1 pilot **does not execute real returns**. Progression: baseline → s
 | Session 12 — Docker packaging | Complete | Dockerfile, Compose, persistent SQLite volume, non-root single-worker runtime, healthcheck; Docker chat/persistence validated in Codespaces |
 | Session 8 — Policy retrieval and experiments | Complete, merged | Lexical policy retrieval integrated into chat; semantic retrieval, evidence evaluation and V1–V3 verifiers implemented as **isolated experiments**, not wired into chat. 231 tests passed in Codespaces after Session 8. |
 | Session 9 — Evidence verifier evaluation | Complete, merged; integration deferred | V3 evaluated on 20 development cases: 14 exact classifications and 3 false-supported verdicts. V3 **not approved for integration**; deferred to the end of the post-V1 backlog. |
+| Session 13 — E2E and regression validation | Validated on feature branch; merge pending | Eight scenarios reviewed with explicit evidence scope; SQLite/API continuity regression added; 242 tests passed in Codespaces. |
 
-**Latest confirmed full test run reported:** `231 passed, 1 warning` in GitHub Codespaces (after Session 8). Session 9 added offline tests, but a final full-suite result for Session 9 has not been reported. Docker chat, health endpoint and SQLite state continuity across container recreation were also validated. The remaining warning is a Starlette/HTTPX deprecation notice; it is not a failing test. Live OpenAI CLI checks confirmed clarification for ambiguous original packaging, `NEEDS_REVIEW` for an opened box, and `ELIGIBLE` for an explicitly sealed product. These exploratory checks are not production reliability benchmarks.
+**Latest confirmed full test run reported:** `242 passed, 1 warning in 1.29s` in GitHub Codespaces on `feature/session-13-e2e-tests` (Session 13; merge pending). This is a feature-branch result, not yet a final run on `main`. Docker chat, health endpoint and SQLite state continuity across container recreation were also validated. The remaining warning is a Starlette/HTTPX deprecation notice; it is not a failing test. Live OpenAI CLI checks confirmed clarification for ambiguous original packaging, `NEEDS_REVIEW` for an opened box, and `ELIGIBLE` for an explicitly sealed product. These exploratory checks are not production reliability benchmarks.
 
 ## Architecture (current)
 
@@ -137,16 +138,19 @@ The fictional demo can now answer explicit policy questions with a source identi
 - [Session 8 — Evidence verifier V3 experiment](docs/21-session-08-evidence-verifier-v3.md)
 - [Session 9 — Evaluation results](docs/23-session-09-v3-results-and-edge-cases.md)
 - [Session 9 — Closure and decision](docs/24-session-09-closure.md)
+- [Session 13 — E2E and regression validation](docs/22-session-13-e2e-regression.md)
 - [Nova V1 — Remaining work and deferred backlog](docs/25-nova-v1-backlog.md)
 
 ## Next steps — Nova V1 closure
 
-1. Run end-to-end regression scenarios for the existing workflow and policy abstention.
-2. Consolidate architecture and final documentation against the verified behavior.
-3. Prepare the reproducible portfolio demo and confirm the final test run on `main`.
+1. **Session 13 validated on feature branch:** eight scenarios reviewed, with manual web-chat checks, engine-level boundary verification, and a persisted API-continuity regression; merge and final `main` run pending.
+2. **Session 14:** consolidate architecture and final documentation against verified behavior.
+3. **Session 15:** prepare the reproducible portfolio demo and confirm the final test run on `main`.
 
 **Post-V1 backlog (last item):** LLM evidence-verifier integration, only after independent evaluation and explicit safety criteria. See [V1 backlog](docs/25-nova-v1-backlog.md). Cloud deployment, production security and observability are not V1 completion requirements.
 
 ## Known limitations
+
+Session 13 confirmed that the colloquial phrase “Abrí la caja para revisar el producto” requires condition clarification rather than directly resolving to OPENED. Browser refresh starts a new conversation and does not restore the previous chat history; this does not invalidate SQLite state persistence when the conversation ID is reused. See [Session 13 evidence](docs/22-session-13-e2e-regression.md).
 
 No live order system, no integrated semantic policy RAG (runtime uses lexical retrieval; semantic retrieval is experimental), no real returns, no production authentication, no concurrency-safe state updates, no formal migration framework beyond the additive SQLite column migration, or retention policy. Model output and external API failures need further hardening before production use.
