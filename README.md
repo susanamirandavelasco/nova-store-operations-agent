@@ -30,9 +30,9 @@ The Level 1 pilot **does not execute real returns**. Progression: baseline → s
 | Session 10 — FastAPI API | Complete, merged | `GET /health`, `POST /chat`, HTTP validation, SQLite conversation continuity, regression hardening; 153 tests passed in Codespaces |
 | Session 11 — Web chat walking skeleton | Complete, merged | Employee-facing HTML/CSS/JavaScript chat served by FastAPI; natural condition prompt, highlighted recommendations, error handling, JavaScript syntax check; 157 tests passed in Codespaces |
 | Session 12 — Docker packaging | Complete | Dockerfile, Compose, persistent SQLite volume, non-root single-worker runtime, healthcheck; Docker chat/persistence validated in Codespaces |
-| Session 8 — Policy retrieval (increment 1) | Integration validated; semantic RAG pending | Source-attributed lexical retrieval, safe abstention, workflow interruption/resumption, Docker chat smoke test; 167 tests passed before final resume-prompt adjustment |
+| Session 8 — Policy retrieval and experiments | Complete, merged | Lexical policy retrieval integrated into chat; semantic retrieval, evidence evaluation and V1–V3 verifiers implemented as **isolated experiments**, not wired into chat. 231 tests passed in Codespaces after Session 8. |\n| Session 9 — Evidence verifier evaluation | Complete, merged; integration deferred | V3 evaluated on 20 development cases: 14 exact classifications and 3 false-supported verdicts. V3 **not approved for integration**; deferred to the end of the post-V1 backlog. |
 
-**Latest validation:** `158 passed, 1 warning` in GitHub Codespaces (session 12). Docker chat, health endpoint and SQLite state continuity across container recreation were also validated. The remaining warning is a Starlette/HTTPX deprecation notice; it is not a failing test. Live OpenAI CLI checks confirmed clarification for ambiguous original packaging, `NEEDS_REVIEW` for an opened box, and `ELIGIBLE` for an explicitly sealed product. These exploratory checks are not production reliability benchmarks.
+**Latest confirmed full test run reported:** `231 passed, 1 warning` in GitHub Codespaces (after Session 8). Session 9 added offline tests, but a final full-suite result for Session 9 has not been reported. Docker chat, health endpoint and SQLite state continuity across container recreation were also validated. The remaining warning is a Starlette/HTTPX deprecation notice; it is not a failing test. Live OpenAI CLI checks confirmed clarification for ambiguous original packaging, `NEEDS_REVIEW` for an opened box, and `ELIGIBLE` for an explicitly sealed product. These exploratory checks are not production reliability benchmarks.
 
 ## Architecture (current)
 
@@ -111,9 +111,9 @@ The chat uses a new conversation ID on each page load and does **not** restore v
 
 Requires Docker with Compose v2. Run `docker compose up --build -d`, then open `http://localhost:8000/`. The database lives in the named Docker volume `nova_data`, so `docker compose down` preserves it; **`docker compose down -v` deletes it**. The service binds to local loopback only and is **not safe for public exposure**. See [Session 12 — Docker packaging](docs/14-session-12-docker.md) for smoke tests and Codespaces notes. Docker validation completed in Codespaces: the chat returned an eligibility recommendation; after `docker compose down` and `docker compose up -d`, the conversation `docker_persist_01` continued with `next_step=ASK_FOR_ORDER_DETAILS`.
 
-## Policy retrieval — Session 8 (first increment)
+## Policy retrieval and evidence experiments — Sessions 8–9
 
-The fictional demo can now answer explicit policy questions with a source identifier and suspend/resume a return without discarding the pending order. This is **lexical retrieval only**, not yet semantic search or LLM-generated RAG. See [Session 8 — Policy retrieval](docs/15-session-08-policy-retrieval.md).
+The fictional demo can now answer explicit policy questions with a source identifier and suspend/resume a return without discarding the pending order. The **runtime uses lexical retrieval**; semantic retrieval and evidence verifiers are implemented only as **isolated experimental modules**, not integrated into the chat or eligibility workflow. V3 was evaluated on 20 development cases (14 exact classifications; 3 false-supported verdicts) and was **not approved for integration**. This is not a validated end-to-end semantic RAG system. See [Session 8 — Policy retrieval](docs/15-session-08-policy-retrieval.md) and [Session 9 — Closure](docs/24-session-09-closure.md).
 
 ## Project documentation
 
@@ -131,16 +131,8 @@ The fictional demo can now answer explicit policy questions with a source identi
 - [Session 10 — FastAPI HTTP adapter](docs/12-session-10-fastapi.md)
 - [Session 11 — Web chat walking skeleton](docs/13-session-11-web-chat.md)
 - [Session 12 — Docker packaging](docs/14-session-12-docker.md)
-- [Session 8 — Policy retrieval (first increment)](docs/15-session-08-policy-retrieval.md)
+- [Session 8 — Policy retrieval (runtime)](docs/15-session-08-policy-retrieval.md)\n- [Session 8 — Semantic retrieval experiment](docs/16-session-08-semantic-retrieval.md)\n- [Session 8 — Evidence verifier V3 experiment](docs/21-session-08-evidence-verifier-v3.md)\n- [Session 9 — Evaluation results](docs/23-session-09-v3-results-and-edge-cases.md)\n- [Session 9 — Closure and decision](docs/24-session-09-closure.md)\n- [Nova V1 — Remaining work and deferred backlog](docs/25-nova-v1-backlog.md)
 
-## Next steps — Demo First
+## Next steps — Nova V1 closure\n\n1. Run end-to-end regression scenarios for the existing workflow and policy abstention.\n2. Consolidate architecture and final documentation against the verified behavior.\n3. Prepare the reproducible portfolio demo and confirm the final test run on `main`.\n\n**Post-V1 backlog (last item):** LLM evidence-verifier integration, only after independent evaluation and explicit safety criteria. See [V1 backlog](docs/25-nova-v1-backlog.md). Cloud deployment, production security and observability are not V1 completion requirements.\n\n## Known limitations
 
-- **Session 11:** web chat walking skeleton completed; pending merge.
-- **Session 12:** Docker packaging and local **Demo 1** (UI → API → workflow → SQLite) validated; pending merge.
-- **Session 8:** lexical policy retrieval integrated and validated; semantic retrieval, grounded generation and evaluation still pending.
-- **Session 9:** escalation and evaluation for **Demo 2**.
-- **Sessions 13–15:** cloud deployment, observability, security, CI/CD and final portfolio validation for **Demo 3**.
-
-## Known limitations
-
-No live order system, no semantic policy RAG (only lexical retrieval), no real returns, no production authentication, no concurrency-safe state updates, no formal migration framework beyond the additive SQLite column migration, or retention policy. Model output and external API failures need further hardening before production use.
+No live order system, no integrated semantic policy RAG (runtime uses lexical retrieval; semantic retrieval is experimental), no real returns, no production authentication, no concurrency-safe state updates, no formal migration framework beyond the additive SQLite column migration, or retention policy. Model output and external API failures need further hardening before production use.
