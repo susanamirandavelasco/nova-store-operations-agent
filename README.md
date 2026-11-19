@@ -32,30 +32,28 @@ The Level 1 pilot **does not execute real returns**. Progression: baseline → s
 | Session 12 — Docker packaging | Complete | Dockerfile, Compose, persistent SQLite volume, non-root single-worker runtime, healthcheck; Docker chat/persistence validated in Codespaces |
 | Session 8 — Policy retrieval and experiments | Complete, merged | Lexical policy retrieval integrated into chat; semantic retrieval, evidence evaluation and V1–V3 verifiers implemented as **isolated experiments**, not wired into chat. 231 tests passed in Codespaces after Session 8. |
 | Session 9 — Evidence verifier evaluation | Complete, merged; integration deferred | V3 evaluated on 20 development cases: 14 exact classifications and 3 false-supported verdicts. V3 **not approved for integration**; deferred to the end of the post-V1 backlog. |
-| Session 13 — E2E and regression validation | Validated on feature branch; merge pending | Eight scenarios reviewed with explicit evidence scope; SQLite/API continuity regression added; 242 tests passed in Codespaces. |
+| Session 13 — E2E and regression validation | Complete, merged | Eight scenarios reviewed with explicit evidence scope; SQLite/API continuity regression added; 242 tests passed in Codespaces. |
 
-**Latest confirmed full test run reported:** `242 passed, 1 warning in 1.29s` in GitHub Codespaces on `feature/session-13-e2e-tests` (Session 13; merge pending). This is a feature-branch result, not yet a final run on `main`. Docker chat, health endpoint and SQLite state continuity across container recreation were also validated. The remaining warning is a Starlette/HTTPX deprecation notice; it is not a failing test. Live OpenAI CLI checks confirmed clarification for ambiguous original packaging, `NEEDS_REVIEW` for an opened box, and `ELIGIBLE` for an explicitly sealed product. These exploratory checks are not production reliability benchmarks.
+**Latest confirmed full test run reported:** `242 passed, 1 warning in 1.29s` in GitHub Codespaces on `main` after Session 13 was merged. This is the latest reported result, not a new test run performed during Session 14. Docker chat, health endpoint and SQLite state continuity across container recreation were also validated. The remaining warning is a Starlette/HTTPX deprecation notice; it is not a failing test. Live OpenAI CLI checks confirmed clarification for ambiguous original packaging, `NEEDS_REVIEW` for an opened box, and `ELIGIBLE` for an explicitly sealed product. These exploratory checks are not production reliability benchmarks.
 
 ## Architecture (current)
 
-```text
-Employee / CLI or web chat (HTML/CSS/JavaScript)
-      |
-FastAPI HTTP (`/`, `/ui/*`, `POST /chat`)
-      |
-WorkflowService  --> StateRepository (in-memory or SQLite)
-      |
-Deterministic route() --> NovaState
+Nova uses **workflow-first orchestration**: the web chat and CLI invoke `WorkflowService`, which manages conversation state, order corroboration, policy questions and deterministic return recommendations. The default web demo uses **SQLite**, fictional order records, rule-based condition interpretation, and **lexical** policy retrieval with source references. The eligibility engine evaluates time window, product condition and category with precedence `NOT_ELIGIBLE > NEEDS_REVIEW > ELIGIBLE`.
 
-IntentClassifier --> StructuredIntentModel --> optional OpenAIIntentModel
-WorkflowService --> optional FakeOrderRepository --> verify_order
-WorkflowService --> ConditionExtractor (rules or opt-in OpenAI)
-WorkflowService --> optional return evaluator --> window + condition + category rules
-WorkflowService --> EligibilityPresenter (Spanish, deterministic)
-                                        --> NOT_ELIGIBLE > NEEDS_REVIEW > ELIGIBLE
+```text
+Web chat --> FastAPI POST /chat --+
+                                  +--> WorkflowService <--> SQLite state
+CLI ------------------------------+
+                                          |--> deterministic workflow / routing
+                                          |--> fictional order corroboration
+                                          |--> condition extraction (rules by default)
+                                          |--> deterministic eligibility + presenter
+                                          +--> lexical policy retrieval
 ```
 
-**Design principles:** LLM interprets ambiguous language; Python validates identifiers and business rules; workflow controls transitions; unclear requests ask for clarification instead of guessing. A provisional order ID is corroborated against fictional records before becoming a confirmed reference. Corroboration is not identity verification, authorization or return eligibility. No live order lookup or return execution exists yet.
+**GenAI integration boundary:** an OpenAI condition-extraction adapter is available only when explicitly enabled in the CLI demo (`--demo --llm-condition`). A structured OpenAI intent-classification adapter exists in the codebase but is not wired into the default app configuration. Semantic policy retrieval and evidence verifiers are **isolated experiments**, not integrated into the runtime chat. This is **not** an end-to-end semantic RAG implementation.
+
+**Design principles:** language interpretation is separate from business decisions; Python corroborates order details and evaluates rules; uncertain descriptions trigger clarification instead of guesses. Nova recommends but does not approve or execute real returns. See **[Nova V1 architecture and design decisions](docs/05-architecture.md)** for the component diagram, trade-offs, boundaries and limitations.
 
 ## Run locally
 
@@ -143,11 +141,11 @@ The fictional demo can now answer explicit policy questions with a source identi
 
 ## Next steps — Nova V1 closure
 
-1. **Session 13 validated on feature branch:** eight scenarios reviewed, with manual web-chat checks, engine-level boundary verification, and a persisted API-continuity regression; merge and final `main` run pending.
-2. **Session 14:** consolidate architecture and final documentation against verified behavior.
-3. **Session 15:** prepare the reproducible portfolio demo and confirm the final test run on `main`.
+1. **Session 13 — complete and merged:** eight E2E/regression scenarios reviewed, with the latest reported full suite on `main`: 242 passed, 1 nonblocking warning.
+2. **Session 14 — documentation consolidation in progress:** architecture documented; align README and backlog, review changes, then merge the documentation PR.
+3. **Session 15 — pending:** prepare a reproducible local portfolio demo, validate setup/scenarios and run the final suite on `main`.
 
-**Post-V1 backlog (last item):** LLM evidence-verifier integration, only after independent evaluation and explicit safety criteria. See [V1 backlog](docs/25-nova-v1-backlog.md). Cloud deployment, production security and observability are not V1 completion requirements.
+**After local V1 closure:** plan a separate **production-like cloud deployment phase** (AWS/Azure evaluation, CI/CD, security, secrets, suitable persistence, observability and cost). This is not a claim of production readiness and is not a prerequisite for the local V1 demo. **LLM evidence-verifier integration remains deferred**, subject to additional evaluation and explicit safety criteria; see [V1 backlog](docs/25-nova-v1-backlog.md).
 
 ## Known limitations
 
