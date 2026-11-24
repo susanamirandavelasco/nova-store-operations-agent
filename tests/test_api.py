@@ -1,4 +1,6 @@
 """HTTP boundary tests do not need a real server, SQLite or OpenAI."""
+from datetime import date
+
 from fastapi.testclient import TestClient
 
 from nova.api import create_app
@@ -13,6 +15,7 @@ def client():
         InMemoryStateRepository(),
         order_repository=FakeOrderRepository(),
         return_evaluator=evaluate_return,
+        evaluation_date=lambda: date(2026, 11, 1),
     )
     return TestClient(create_app(service))
 
