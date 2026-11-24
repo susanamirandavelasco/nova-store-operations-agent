@@ -1,4 +1,6 @@
 """The CLI demo is opt-in and composes the existing deterministic adapters."""
+from datetime import date
+
 from nova.__main__ import build_service
 from nova.workflow import Step
 
@@ -10,7 +12,11 @@ def test_default_cli_does_not_enable_order_lookup(tmp_path):
 
 
 def test_demo_cli_enables_fictional_return_flow(tmp_path):
-    service = build_service(demo=True, db_path=str(tmp_path / "demo.sqlite3"))
+    service = build_service(
+        demo=True,
+        db_path=str(tmp_path / "demo.sqlite3"),
+        evaluation_date=lambda: date(2026, 11, 1),
+    )
     conversation = "cli-test"
     service.handle_message(conversation, "Quiero devolver unos audífonos")
     service.handle_message(conversation, "83921")

@@ -1,5 +1,7 @@
 """Run with python -m nova; opt into fictional return demo with --demo."""
 import argparse
+from datetime import date
+from typing import Callable
 
 from nova.policy_retrieval import PolicyRetriever
 from nova.orders import FakeOrderRepository
@@ -8,7 +10,13 @@ from nova.return_evaluator import evaluate_return
 from nova.service import WorkflowService
 
 
-def build_service(*, demo: bool = False, llm_condition: bool = False, db_path: str = "nova_state.sqlite3") -> WorkflowService:
+def build_service(
+    *,
+    demo: bool = False,
+    llm_condition: bool = False,
+    db_path: str = "nova_state.sqlite3",
+    evaluation_date: Callable[[], date] | None = None,
+) -> WorkflowService:
     """Compose adapters at the application boundary; no external services."""
     if llm_condition and not demo:
         raise ValueError("--llm-condition requires --demo")
@@ -19,10 +27,11 @@ def build_service(*, demo: bool = False, llm_condition: bool = False, db_path: s
             repository,
             order_repository=FakeOrderRepository(),
             return_evaluator=evaluate_return,
+            evaluation_date=evaluation_date,
             condition_extractor=OpenAIConditionExtractor() if llm_condition else None,
             policy_retriever=PolicyRetriever(),
         )
-    return WorkflowService(repository)
+    return WorkflowService(repository, evaluation_date=evaluation_date)
 
 
 def main() -> None:

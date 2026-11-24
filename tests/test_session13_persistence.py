@@ -1,4 +1,6 @@
 """Session 13: persistence and workflow continuity regression."""
+from datetime import date
+
 from fastapi.testclient import TestClient
 
 from nova.api import create_app
@@ -10,7 +12,10 @@ def test_return_flow_continues_after_api_recreation(tmp_path):
     conversation_id = "session13-persisted-return"
 
     first = TestClient(create_app(
-        build_service(demo=True, db_path=db_path)
+        build_service(
+            demo=True, db_path=db_path,
+            evaluation_date=lambda: date(2026, 11, 1),
+        )
     ))
 
     def send(client, message):
@@ -32,7 +37,10 @@ def test_return_flow_continues_after_api_recreation(tmp_path):
 
     # Recreate the API/service using the same SQLite database.
     second = TestClient(create_app(
-        build_service(demo=True, db_path=db_path)
+        build_service(
+            demo=True, db_path=db_path,
+            evaluation_date=lambda: date(2026, 11, 1),
+        )
     ))
 
     verified = send(second, "Audífonos")
